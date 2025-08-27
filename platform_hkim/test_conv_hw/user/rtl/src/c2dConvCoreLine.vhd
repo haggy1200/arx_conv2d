@@ -42,19 +42,12 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V241202    hkim  1D Convolution Core
--- V241226    hkim  Code revision
--- V250109    hkim  Rearrange the order of ports
--- V250114    hkim  Monitoring signals are added
---                  Timing is tuned
 --==============================================================================
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
                 USE work.pkgFuncNpuConv2d.all;
@@ -75,7 +68,7 @@ PORT(
   imgBufEmpty     : out std_logic;
   kerBufInit      : in  std_logic;
   kerBufLdEn      : in  std_logic;
-  kerBufRdEn      : in  std_logic;  ---V241226
+  kerBufRdEn      : in  std_logic;
   kerBufLineIn    : in  std_logic_vector(sizeOfBitKerIn-1 downto 0);
   imgBufInit      : in  std_logic;
   imgBufLdEn      : in  std_logic;
@@ -86,8 +79,6 @@ PORT(
 );
 END;
 --==============================================================================
-  --imgBufLineOut   : out std_logic_vector(numOfInput*sizeOfBitIn-1 downto 0);
-  --kerBufLineOut   : out std_logic_vector(numOfInput*sizeOfBitIn-1 downto 0);
 
 --==============================================================================
 ARCHITECTURE rtl OF c2dConvCoreLine IS
@@ -123,7 +114,7 @@ ARCHITECTURE rtl OF c2dConvCoreLine IS
     kerBufLineOut   : out std_logic_vector(numOfInput*sizeOfBitIn-1 downto 0);
     kerBufInit      : in  std_logic;
     kerBufLdEn      : in  std_logic;
-    kerBufRdEn      : in  std_logic;  ---V241226
+    kerBufRdEn      : in  std_logic;
     kerBufLineIn    : in  std_logic_vector(           sizeOfBitIn-1 downto 0);
     clk             : in  std_logic;
     resetB          : in  std_logic
@@ -159,7 +150,7 @@ ARCHITECTURE rtl OF c2dConvCoreLine IS
   SIGNAL  kerBufLineOutI  : std_logic_vector(numOfInput*sizeOfBitKerIn-1 downto 0);
   SIGNAL  outValidI       : std_logic;
   SIGNAL  outQI           : std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfInput))))-1 downto 0);
-  ---V250114
+
   -- synthesis translate_off
   TYPE kerBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitKerIn-1 downto 0);
   TYPE imgBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitImgIn-1 downto 0);
@@ -238,7 +229,7 @@ BEGIN
     kerBufLineOut   => kerBufLineOutI  ,
     kerBufInit      => kerBufInit      ,
     kerBufLdEn      => kerBufLdEn      ,
-    kerBufRdEn      => kerBufRdEn      ,  ---V241226
+    kerBufRdEn      => kerBufRdEn      ,
     kerBufLineIn    => kerBufLineIn    ,
     clk             => clk             ,
     resetB          => resetB
@@ -255,17 +246,11 @@ BEGIN
     outQ            => outQI           ,
     inVecA          => imgBufLineOutI  ,
     inVecB          => kerBufLineOutI  ,
-    enable          => imgBufOutValidI ,  ---V250114
+    enable          => imgBufOutValidI ,
     clk             => clk             ,
     resetB          => resetB
   );
-    ---V250114 : enable          => imgBufRdEn      ,  -- TBD
   -- END MAPPING
-
-  ------------------------------------------------------------------------------
-  -- PROCESSES
-  ------------------------------------------------------------------------------
-  ------------------------------------------------------------------------------
 
   -- synthesis translate_off
   ------------------------------------------------------------------------------

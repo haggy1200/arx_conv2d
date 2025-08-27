@@ -42,17 +42,12 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V241202    hkim  2D Convolution Core
--- V250109    hkim  Code Revision
--- V250114    hkim  Monopulse generator is added
 --==============================================================================
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
                 USE work.pkgFuncNpuConv2d.all;
@@ -67,7 +62,7 @@ GENERIC(
   sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
 );
 PORT(
-  convCoreEnd     : out std_logic;  ---V250114
+  convCoreEnd     : out std_logic;
   convCoreValid   : out std_logic;
   convCoreOut     : out std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfWidth))))+INTEGER(ceil(log2(real(numOfHeight))))-1 downto 0);
   kerBufFull      : out std_logic;
@@ -107,7 +102,7 @@ ARCHITECTURE rtl OF c2dConvCore IS
     imgBufEmpty     : out std_logic;
     kerBufInit      : in  std_logic;
     kerBufLdEn      : in  std_logic;
-    kerBufRdEn      : in  std_logic;  ---V241226
+    kerBufRdEn      : in  std_logic;
     kerBufLineIn    : in  std_logic_vector(sizeOfBitKerIn-1 downto 0);
     imgBufInit      : in  std_logic;
     imgBufLdEn      : in  std_logic;
@@ -133,7 +128,6 @@ ARCHITECTURE rtl OF c2dConvCore IS
   );
   END COMPONENT;
 
-  ---V250114
   COMPONENT ipMonoPulseSeFF
   	PORT(
   		q		          : out std_logic;
@@ -214,7 +208,7 @@ ARCHITECTURE rtl OF c2dConvCore IS
   SIGNAL  addTreeInI        : std_logic_vector(numOfHeight*(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfWidth)))))-1 downto 0);
   SIGNAL  convCoreOutI      : std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfWidth))))+INTEGER(ceil(log2(real(numOfHeight))))-1 downto 0);
   SIGNAL  convCoreValidI    : std_logic;
-  SIGNAL  convCoreEndI      : std_logic;  ---V250114
+  SIGNAL  convCoreEndI      : std_logic;
   -- SIGNAL END
 
 BEGIN
@@ -226,7 +220,7 @@ BEGIN
   ------------------------------------------------------------------------------
   -- SIGNAL CONNECTION
   ------------------------------------------------------------------------------
-  convCoreEnd     <=convCoreEndI;   ---V250114
+  convCoreEnd     <=convCoreEndI;
   convCoreValid   <=convCoreValidI;
   convCoreOut     <=convCoreOutI;
   -- END CONNECTION
@@ -278,12 +272,10 @@ BEGIN
       outValid        => convCoreValidI  ,
       outQ            => convCoreOutI    ,
       inVec           => addTreeInI      ,
-      enable          => convLineValidI(0), ---V250113
+      enable          => convLineValidI(0),
       clk             => clk             ,
       resetB          => resetB
     );
-      ---V240113 : enable          => addTreeEn       ,  -- TBD
-  ---V250114
     i_ipMonoPulseSeFF : ipMonoPulseSeFF
     PORT MAP(
       q               => OPEN            ,

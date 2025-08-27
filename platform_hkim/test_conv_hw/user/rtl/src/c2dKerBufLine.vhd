@@ -47,11 +47,8 @@
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
                 USE work.pkgFuncNpuConv2d.all;
@@ -68,7 +65,7 @@ PORT(
   kerBufLineOut   : out std_logic_vector(numOfInput*sizeOfBitIn-1 downto 0);
   kerBufInit      : in  std_logic;
   kerBufLdEn      : in  std_logic;
-  kerBufRdEn      : in  std_logic;  ---V241226
+  kerBufRdEn      : in  std_logic;
   kerBufLineIn    : in  std_logic_vector(           sizeOfBitIn-1 downto 0);
   clk             : in  std_logic;
   resetB          : in  std_logic
@@ -86,7 +83,6 @@ ARCHITECTURE rtl OF c2dKerBufLine IS
   ------------------------------------------------------------------------------
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
-  -- TYPE kerBufArrayType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(KERNEL_BUF_BITSIZE-1 downto 0);
   SIGNAL kernelBufI   : kerBufArrayType(0 TO numOfInput-1);
   SIGNAL elemCntI     : NATURAL RANGE 0 TO numOfInput-1;
   SIGNAL kernelFullI  : std_logic;
@@ -123,7 +119,6 @@ BEGIN
         kernelBufI(numOfInput-1) <=kerBufLineIn;
         FOR i IN 0 TO (numOfInput-2) LOOP kernelBufI(i) <=kernelBufI(i+1); END LOOP;
       end if;
-      ---V241226 : kerBufLineOut <=arrayToVector( kernelBufI, numOfInput, sizeOfBitIn ); -- Array to Vector
     end if;
   END PROCESS;
 
@@ -145,18 +140,16 @@ BEGIN
     elsif (rising_edge(clk)) then
       if (kerBufInit) then kernelFullI <='0';
       elsif elemCntI=numOfInput-1 then kernelFullI <='1';
-      ---V241226 : else                             kernelFullI <='0';
       end if;
     end if;
   END PROCESS;
 
-  ---V241226
   kerBufLineOutP : PROCESS(all)
   BEGIN
     if resetB='0' then kerBufLineOut <=(others=>'0');
     elsif rising_edge(clk) then
       if (kerBufRdEn) then
-        kerBufLineOut <=arrayToVector( kernelBufI, numOfInput, sizeOfBitIn ); -- Array to Vector
+        kerBufLineOut <=arrayToVector( kernelBufI, numOfInput, sizeOfBitIn );
       end if;
     end if;
   END PROCESS;

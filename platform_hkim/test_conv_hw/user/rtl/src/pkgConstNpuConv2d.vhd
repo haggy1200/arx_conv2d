@@ -41,7 +41,7 @@
 -- File Name : pkgConstNpuConv2d.vhd
 --==============================================================================
 -- Rev.      Des.    Function
--- V210000   hkim    Package for pkgConstNpuConv2d
+-- V250818   hkim    Package for pkgConstNpuConv2d
 --
 --                    |<------------------- image width --------------------->|
 --                    |<-------- image buffer ------->|                       |
@@ -70,14 +70,10 @@
 --==============================================================================
 
 --==============================================================================
-LIBRARY std;    USE std.textio.all;                     -- for Text
+LIBRARY std;    USE std.textio.all;
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_textio.all;          -- for Text
-                --USE ieee.std_logic_unsigned.all;        -- for unsigned
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;               -- for sfixed
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 --==============================================================================
 
 --==============================================================================
@@ -94,8 +90,6 @@ PACKAGE pkgConstNpuConv2d IS
   CONSTANT IMAGE_BUF_BITSIZE      : NATURAL :=    32;  -- Image Buffer Element Bit Size (32-bit 2's complement)
   CONSTANT IMAGE_BUF_WIDTH_BITSIZE  : NATURAL :=   8;
   CONSTANT IMAGE_BUF_HEIGHT_BITSIZE : NATURAL :=   8;
-  --CONSTANT IMAGE_BUF_WIDTH_BITSIZE  : POSITIVE := POSITIVE(ceil(log2(real(IMAGE_BUF_WIDTH+1))));
-  --CONSTANT IMAGE_BUF_HEIGHT_BITSIZE : POSITIVE := POSITIVE(ceil(log2(real(IMAGE_BUF_HEIGHT+1))));
 
   -- KERNEL
   CONSTANT KERNEL_ORDER           : NATURAL :=     0;  -- Kernel Buffer Order, 0=Normal, 1=Inverse
@@ -106,8 +100,6 @@ PACKAGE pkgConstNpuConv2d IS
   CONSTANT KERNEL_BUF_BITSIZE     : NATURAL :=    32;  -- Kernel Buffer Element Bit Size (32-bit 2's complement)
   CONSTANT KERNEL_BUF_WIDTH_BITSIZE  : NATURAL :=  8;
   CONSTANT KERNEL_BUF_HEIGHT_BITSIZE : NATURAL :=  8;
-  --CONSTANT KERNEL_BUF_WIDTH_BITSIZE  : POSITIVE := POSITIVE(ceil(log2(real(KERNEL_BUF_WIDTH+1))));
-  --CONSTANT KERNEL_BUF_HEIGHT_BITSIZE : POSITIVE := POSITIVE(ceil(log2(real(KERNEL_BUF_HEIGHT+1))));
 
   -- PADDING
   CONSTANT PADDING                : NATURAL :=     0;  -- Padding Amount; 0=Off;
@@ -120,14 +112,10 @@ PACKAGE pkgConstNpuConv2d IS
   -- OUTPUT : O = floor{ ( image + 2 x padding - kernel ) / stride } + 1
   CONSTANT OUTPUT_WIDTH           : POSITIVE := POSITIVE( floor( ( real(IMAGE_WIDTH     ) +(2.0)*real(PADDING) -real(KERNEL_WIDTH     ) ) / real(STRIDE_WIDTH ) ) +1.0 );
   CONSTANT OUTPUT_HEIGHT          : POSITIVE := POSITIVE( floor( ( real(IMAGE_HEIGHT    ) +(2.0)*real(PADDING) -real(KERNEL_HEIGHT    ) ) / real(STRIDE_HEIGHT) ) +1.0 );
-  --CONSTANT OUTPUT_BUF_WIDTH       : POSITIVE := POSITIVE( floor( ( real(IMAGE_BUF_WIDTH ) +(2.0)*real(PADDING) -real(KERNEL_BUF_WIDTH ) ) / real(STRIDE_WIDTH ) ) +1.0 );
   CONSTANT OUTPUT_BUF_HEIGHT      : POSITIVE := POSITIVE( floor( ( real(IMAGE_BUF_HEIGHT) +(2.0)*real(PADDING) -real(KERNEL_BUF_HEIGHT) ) / real(STRIDE_HEIGHT) ) +1.0 );
   CONSTANT OUTPUT_BUF_WIDTH       : NATURAL := 8;
   CONSTANT OUTPUT_BUF_BITSIZE     : NATURAL := IMAGE_BUF_BITSIZE;
   CONSTANT OUTPUT_BUF_WIDTH_BITSIZE : POSITIVE := IMAGE_BUF_BITSIZE + KERNEL_BUF_BITSIZE + INTEGER(ceil(log2(real(IMAGE_BUF_WIDTH)))) + INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))));
-  --CONSTANT OUTPUT_BUF_WIDTH_BITSIZE : POSITIVE := IMAGE_BUF_BITSIZE + KERNEL_BUF_BITSIZE + INTEGER(ceil(log2(real(KERNEL_BUF_WIDTH)))) + INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))));
-  --CONSTANT variableName   : POSITIVE := POSITIVE(ceil(log2(real(variable2))));  -- bit size of variable2
-  --CONSTANT variableName   : std_logic_vector( 7 downto 0) := "11110000";
   CONSTANT MAX_OUTPUT_NUM         : NATURAL :=     8; -- for Platform
 
   -- ADDER TREE 1
@@ -135,43 +123,8 @@ PACKAGE pkgConstNpuConv2d IS
   CONSTANT ADD_TREE_BITSIZE_IN    : NATURAL  := 8;                -- Input bit size of adder tree
   CONSTANT ADD_TREE_NUM_STAGE     : POSITIVE := POSITIVE(ceil(log2(real(ADD_TREE_NUM_INPUT))));
   CONSTANT ADD_TREE_BITSIZE_OUT   : NATURAL  := ADD_TREE_BITSIZE_IN + ADD_TREE_NUM_STAGE;
-
-  ------------------------------------------------------------------------------
-  -- Record Type
-  ------------------------------------------------------------------------------
-  --TYPE typeName IS RECORD
-  --  item1  : INTEGER;
-  --  item2  : INTEGER;
-  --END RECORD;
-
-  ------------------------------------------------------------------------------
-  -- Function
-  ------------------------------------------------------------------------------
-  --FUNCTION afunctionName( aIn : in sfixed; aIpfTypeIn : in ipfType;
-  --                        bIn : in sfixed; bIpfTypeIn : in ipfType;
-  --                                         oIpfTypeIn : in ipfType) RETURN sfixed;
-
 END PACKAGE;
 
 PACKAGE BODY pkgConstNpuConv2d IS
-  ------------------------------------------------------------------------------
-  -- Function Body
-  ------------------------------------------------------------------------------
-  --FUNCTION afunctionName( aIn : in sfixed; aIpfTypeIn : in ipfType;
-  --                        bIn : in sfixed; bIpfTypeIn : in ipfType;
-  --                                         oIpfTypeIn : in ipfType) RETURN sfixed IS
-  --  CONSTANT aSfixedType : fixedType := ipfType2FixedType(aIpfTypeIn);
-  --  CONSTANT bSfixedType : fixedType := ipfType2FixedType(bIpfTypeIn);
-  --  CONSTANT cSfixedType : fixedType := ipfType2FixedType(cIpfTypeIn);
-  --  VARIABLE aSfixed     : sfixed(aSfixedType.fixedLeft downto aSfixedType.fixedRight);
-  --  VARIABLE bSfixed     : sfixed(bSfixedType.fixedLeft downto bSfixedType.fixedRight);
-  --  VARIABLE tmpSfixed   : sfixed((aSfixed'high + bSfixed'high +1) downto (aSfixed'low + bSfixed'low));
-  --  variable cSfixed     : sfixed(cSfixedType.fixedLeft downto cSfixedType.fixedRight);
-  --BEGIN
-  --  tmpSfixed := aIn * bIn;
-  --  cSfixed := resize(tmpSfixed, cSfixed);
-  --  RETURN cSfixed;
-  --END afunctionName;
-  ------------------------------------------------------------------------------
 END PACKAGE BODY;
 --==============================================================================

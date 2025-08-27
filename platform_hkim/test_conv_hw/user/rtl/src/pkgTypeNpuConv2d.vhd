@@ -41,18 +41,14 @@
 -- File Name : pkgTypeNpuConv2d.vhd
 --==============================================================================
 -- Rev.      Des.    Function
--- V210000   hkim    Package for pkgTypeNpuConv2d
+-- V241127   hkim    Package for pkgTypeNpuConv2d
 --==============================================================================
 
 --==============================================================================
-LIBRARY std;    USE std.textio.all;                     -- for Text
+LIBRARY std;    USE std.textio.all;
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_textio.all;          -- for Text
-                --USE ieee.std_logic_unsigned.all;        -- for unsigned
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;               -- for sfixed
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
 --==============================================================================
 
@@ -67,7 +63,6 @@ PACKAGE pkgTypeNpuConv2d IS
   -- 1D Arrays
   TYPE imgBufArray1DType  IS ARRAY (NATURAL RANGE<>) OF imgBufArrayType(0 TO IMAGE_BUF_WIDTH-1);
   TYPE kerBufArray1DType  IS ARRAY (NATURAL RANGE<>) OF kerBufArrayType(0 TO KERNEL_BUF_WIDTH-1);
-  --TYPE outBufArray1DType  IS ARRAY (NATURAL RANGE<>) OF outBufArrayType(0 TO OUTBUF_WIDTH-1);
   ------------------------------------------------------------------------------
 END PACKAGE;
 --============================================================================

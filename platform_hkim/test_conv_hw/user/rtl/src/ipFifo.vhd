@@ -46,11 +46,8 @@
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 --==============================================================================
 
 --==============================================================================
@@ -81,7 +78,6 @@ ARCHITECTURE rtl OF ipFifo IS
   ------------------------------------------------------------------------------
   TYPE ipFifoType IS ARRAY(0 TO sizeOfDepth-1) OF std_logic_vector(sizeOfWidth-1 downto 0);
 
-  --CONSTANT zeroSlv  : std_logic_vector(sizeOfWidth-1 downto 0) :=(others=>'0');
   SIGNAL  fifoRegI  : ipFifoType;
   -- SIGNAL END
 

@@ -46,11 +46,8 @@
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 --==============================================================================
 
 --==============================================================================

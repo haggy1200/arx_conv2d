@@ -42,40 +42,24 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V250113    hkim  Conv Top
--- V250114    hkim  end signal is added to c2dConvCore, c2dConvCoreCtrl
--- V250115    hkim  Code tuning
--- V250116    hkim  KERNEL_WIDTH, KERNEL_HEIGHT, IMAGE_WIDTH, IMAGE_HEIGHT are changed to input port
---                  c2dConvInput module is added
--- V250117    hkim  GENERIC statement is removed for synthesis
---                  outNumHeight is added
--- V250120    hkim  Output data bit width parameter is applied
--- V250526    hkim  Module c2dTransBuf is added
---                  Top ports are revised for integration to ARX platform
--- V250602    hkim  End of 2DConv is added for ARX Platform
---                  c2dOutBuf is added for ARX Platform
--- V250818    hkim  MAX_OUTPUT_NUM is applied for the Platform
 --==============================================================================
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
                 USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                --USE ieee.fixed_pkg.all;
-                ---V250526 : USE work.pkgTestData.all;
 
 --==============================================================================
 ENTITY c2dConvTop IS
 PORT(
-  endOfConv2D     : out std_logic;  ---V250602
+  endOfConv2D     : out std_logic;
   convCoreValid   : out std_logic;
-  convCoreOut     : out std_logic_vector(OUTPUT_BUF_WIDTH*OUTPUT_BUF_BITSIZE-1 downto 0);  ---V250120
-  kerInBufLdInit  : in  std_logic;                                              -- Kernel load init, V250526 : START
+  convCoreOut     : out std_logic_vector(OUTPUT_BUF_WIDTH*OUTPUT_BUF_BITSIZE-1 downto 0);
+  kerInBufLdInit  : in  std_logic;                                              -- Kernel load init
   kerInBufLdEn    : in  std_logic;
   kerInBufLdEnd   : in  std_logic;
   kerInBufDataIn  : in  std_logic_vector(KERNEL_BUF_WIDTH*KERNEL_BUF_BITSIZE-1 downto 0);
@@ -86,7 +70,7 @@ PORT(
   numKernelWidth  : in  std_logic_vector(7 downto 0);
   numKernelHeight : in  std_logic_vector(7 downto 0);
   numImageWidth   : in  std_logic_vector(7 downto 0);
-  numImageHeight  : in  std_logic_vector(7 downto 0);                           ---V250526 : END
+  numImageHeight  : in  std_logic_vector(7 downto 0);
   numOutWidth     : in  std_logic_vector(7 downto 0);
   numOutHeight    : in  std_logic_vector(7 downto 0);
   npuStart        : in  std_logic;
@@ -95,26 +79,12 @@ PORT(
 );
 END;
 --==============================================================================
-  ---V250526 : npuConvStart    : in  std_logic;
-  ---V250526 : kernelWidth     : in  std_logic_vector(KERNEL_BUF_WIDTH_BITSIZE-1 downto 0);  ---V250116 : START
-  ---V250526 : kernelHeight    : in  std_logic_vector(KERNEL_BUF_HEIGHT_BITSIZE-1 downto 0);
-  ---V250526 : imageWidth      : in  std_logic_vector(IMAGE_BUF_WIDTH_BITSIZE-1 downto 0);
-  ---V250526 : imageHeight     : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);  ---V250116 : END
-  ---V250120 : convCoreOut     : out std_logic_vector(IMAGE_BUF_BITSIZE+KERNEL_BUF_BITSIZE+INTEGER(ceil(log2(real(KERNEL_BUF_WIDTH))))+INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))))-1 downto 0);
-  ---V250117 : GENERIC(
-  ---V250117 :   numOfWidth      : NATURAL := 8;   -- number of WIDTH    , KERNEL_BUF_WIDTH
-  ---V250117 :   numOfHeight     : NATURAL := 8;   -- number of HEIGHT   , KERNEL_BUF_HEIGHT
-  ---V250117 :   sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
-  ---V250117 :   sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
-  ---V250117 : );
-  ---V250117 : convCoreOut     : out std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfWidth))))+INTEGER(ceil(log2(real(numOfHeight))))-1 downto 0);
 
 --==============================================================================
 ARCHITECTURE rtl OF c2dConvTop IS
   ------------------------------------------------------------------------------
   -- COMPONENT DECLARATION
   ------------------------------------------------------------------------------
-  ---V250526
   COMPONENT c2dTransBuf
   GENERIC(
     numOfWidth      : NATURAL := 8;   -- number of BUF_WIDTH  , HW
@@ -147,7 +117,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
     sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
   );
   PORT(
-    convCoreEnd     : out std_logic;  ---V250114
+    convCoreEnd     : out std_logic;
     convCoreValid   : out std_logic;
     convCoreOut     : out std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfWidth))))+INTEGER(ceil(log2(real(numOfHeight))))-1 downto 0);
     kerBufFull      : out std_logic;
@@ -169,8 +139,8 @@ ARCHITECTURE rtl OF c2dConvTop IS
 
   COMPONENT c2dConvCoreCtrl
   PORT(
-    endOfConv2D     : out std_logic;  ---V250602
-    extraOutEn      : out std_logic;  ---V250818
+    endOfConv2D     : out std_logic;
+    extraOutEn      : out std_logic;
     kerBufInit      : out std_logic;
     kerBufLdEn      : out std_logic;
     kerBufRdEn      : out std_logic;
@@ -178,17 +148,17 @@ ARCHITECTURE rtl OF c2dConvTop IS
     imgBufLdEn      : out std_logic;
     imgBufRdEn      : out std_logic;
     addTreeEn       : out std_logic;  -- TBD
-    outHeightCnt    : out std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);  ---V250117
+    outHeightCnt    : out std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
     npuStart        : in  std_logic;  -- NPU Start
-    convCoreEnd     : in  std_logic;  ---V250114
+    convCoreEnd     : in  std_logic;
     convCoreValid   : in  std_logic;
     imgBufFull      : in  std_logic;
     imgBufEmpty     : in  std_logic;
     kerBufFull      : in  std_logic;
-    kernelWidth     : in  std_logic_vector(KERNEL_BUF_WIDTH_BITSIZE-1 downto 0);  ---V250116 : START
+    kernelWidth     : in  std_logic_vector(KERNEL_BUF_WIDTH_BITSIZE-1 downto 0);
     kernelHeight    : in  std_logic_vector(KERNEL_BUF_HEIGHT_BITSIZE-1 downto 0);
     imageWidth      : in  std_logic_vector(IMAGE_BUF_WIDTH_BITSIZE-1 downto 0);
-    imageHeight     : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);  ---V250116 : END
+    imageHeight     : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
     clk             : in  std_logic;
     resetB          : in  std_logic
   );
@@ -227,33 +197,6 @@ ARCHITECTURE rtl OF c2dConvTop IS
     resetB          : in  std_logic
   );
   END COMPONENT;
-
-  -- ---V250116
-  -- COMPONENT c2dConvInput
-  -- GENERIC(
-  --   numOfWidth      : NATURAL := 8;   -- number of WIDTH    , KERNEL_BUF_WIDTH
-  --   numOfHeight     : NATURAL := 8;   -- number of HEIGHT   , KERNEL_BUF_HEIGHT
-  --   sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
-  --   sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
-  -- );
-  -- PORT(
-  --   kerBufLineIn    : out std_logic_vector(numOfHeight*sizeOfBitKerIn-1 downto 0);
-  --   imgBufLineIn    : out std_logic_vector(numOfHeight*sizeOfBitImgIn-1 downto 0);
-  --   kerBufInit      : in  std_logic;
-  --   kerBufLdEn      : in  std_logic;
-  --   kerBufRdEn      : in  std_logic;
-  --   imgBufInit      : in  std_logic;
-  --   imgBufLdEn      : in  std_logic;
-  --   imgBufRdEn      : in  std_logic;
-  --   kernelWidth     : in  std_logic_vector(KERNEL_BUF_WIDTH_BITSIZE-1 downto 0);
-  --   kernelHeight    : in  std_logic_vector(KERNEL_BUF_HEIGHT_BITSIZE-1 downto 0);
-  --   imageWidth      : in  std_logic_vector(IMAGE_BUF_WIDTH_BITSIZE-1 downto 0);
-  --   imageHeight     : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
-  --   outHeightCnt    : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);  ---V250117
-  --   clk             : in  std_logic;
-  --   resetB          : in  std_logic
-  -- );
-  -- END COMPONENT;
   -- COMPONENT END
 
   ------------------------------------------------------------------------------
@@ -269,8 +212,8 @@ ARCHITECTURE rtl OF c2dConvTop IS
   SIGNAL  imgBufFull      : std_logic;
   SIGNAL  imgBufEmpty     : std_logic;
   SIGNAL  kerBufFull      : std_logic;
-  SIGNAL  kerBufLineIn    : std_logic_vector(IMAGE_BUF_HEIGHT*KERNEL_BUF_BITSIZE-1 downto 0);  ---V250117
-  SIGNAL  imgBufLineIn    : std_logic_vector(IMAGE_BUF_HEIGHT*IMAGE_BUF_BITSIZE-1 downto 0);   ---V250117
+  SIGNAL  kerBufLineIn    : std_logic_vector(IMAGE_BUF_HEIGHT*KERNEL_BUF_BITSIZE-1 downto 0);
+  SIGNAL  imgBufLineIn    : std_logic_vector(IMAGE_BUF_HEIGHT*IMAGE_BUF_BITSIZE-1 downto 0);
   SIGNAL  sigFifoInI      : std_logic_vector(6 downto 0);
   SIGNAL  sigFifoOutI     : std_logic_vector(6 downto 0);
   SIGNAL  kerBufInitI     : std_logic;
@@ -280,9 +223,8 @@ ARCHITECTURE rtl OF c2dConvTop IS
   SIGNAL  imgBufLdEnI     : std_logic;
   SIGNAL  imgBufRdEnI     : std_logic;
   SIGNAL  addTreeEnI      : std_logic;
-  SIGNAL  convCoreEndI    : std_logic;  ---V250114
-  SIGNAL  outHeightCntI   : std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);  ---V250117
-  ---V250526
+  SIGNAL  convCoreEndI    : std_logic;
+  SIGNAL  outHeightCntI   : std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
   SIGNAL  inBufImgValidI  : std_logic;
   SIGNAL  inBufKerValidI  : std_logic;
   SIGNAL  bufLineOutImgI  : std_logic_vector(IMAGE_BUF_WIDTH*IMAGE_BUF_BITSIZE-1 downto 0);
@@ -293,10 +235,8 @@ ARCHITECTURE rtl OF c2dConvTop IS
   SIGNAL  imageHeight     : std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
   SIGNAL  convCoreOutI    : std_logic_vector(IMAGE_BUF_BITSIZE+KERNEL_BUF_BITSIZE+INTEGER(ceil(log2(real(IMAGE_BUF_WIDTH))))+INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))))-1 downto 0);
   SIGNAL  convCoreValidI  : std_logic;
-  SIGNAL  extraOutEnI     : std_logic; ---V250818
+  SIGNAL  extraOutEnI     : std_logic;
   SIGNAL  convCoreValidO  : std_logic;
-  ---V250117 : SIGNAL  kerBufLineIn    : std_logic_vector(numOfHeight*sizeOfBitKerIn-1 downto 0);
-  ---V250117 : SIGNAL  imgBufLineIn    : std_logic_vector(numOfHeight*sizeOfBitImgIn-1 downto 0);
   -- SIGNAL END
 
 BEGIN
@@ -324,23 +264,12 @@ BEGIN
   imgBufRdEnI <=sigFifoOutI(1);
   addTreeEnI  <=sigFifoOutI(0);
 
-  ---V250818
-  convCoreValid <=convCoreValidO OR extraOutEnI;  ---V250818
-
-  ---V250530 : ---V250525
-  ---V250530 : kernelWidth  <=numKernelWidth;
-  ---V250530 : kernelHeight <=numKernelHeight;
-  ---V250530 : imageWidth   <=numImageWidth;
-  ---V250530 : imageHeight  <=numImageHeight;
-  
-  --convCoreOutI <=std_logic_vector(to_signed(to_integer(signed(convCoreOutI)), OUTPUT_BUF_WIDTH_BITSIZE));
-  ---V250602 : convCoreOut <=convCoreOutI(convCoreOutI'LEFT) & convCoreOutI(OUTPUT_BUF_WIDTH_BITSIZE-2 downto 0);
+  convCoreValid <=convCoreValidO OR extraOutEnI;
   -- END CONNECTION
 
   ------------------------------------------------------------------------------
   -- PORT MAPPING
   ------------------------------------------------------------------------------
-  ---V250526
   i00_c2dTransBuf : c2dTransBuf -- for IMAGE BUFFER
   GENERIC MAP(
     numOfWidth      => IMAGE_BUF_WIDTH  , -- number of BUF_WIDTH  , HW
@@ -389,19 +318,18 @@ BEGIN
   i0_c2dConvCore : c2dConvCore
   GENERIC MAP(
     numOfWidth      => KERNEL_BUF_WIDTH   ,
-    numOfHeight     => IMAGE_BUF_HEIGHT   , ---V250530
+    numOfHeight     => IMAGE_BUF_HEIGHT   ,
     sizeOfBitImgIn  => IMAGE_BUF_BITSIZE  ,
     sizeOfBitKerIn  => KERNEL_BUF_BITSIZE
   )
-    ---V240530 : numOfHeight     => KERNEL_BUF_HEIGHT  ,
   PORT MAP(
-    convCoreEnd     => convCoreEndI    ,  ---V250114
+    convCoreEnd     => convCoreEndI    ,
     convCoreValid   => convCoreValidI  ,
     convCoreOut     => convCoreOutI    ,
     kerBufFull      => kerBufFull      ,
     imgBufFull      => imgBufFull      ,
     imgBufEmpty     => imgBufEmpty     ,
-    kerBufInit      => kerBufInitI     ,  -- from Signal FIFO(delayed)
+    kerBufInit      => kerBufInitI     ,
     kerBufLdEn      => kerBufLdEnI     ,
     kerBufRdEn      => kerBufRdEnI     ,
     kerBufLineIn    => kerBufLineIn    ,
@@ -413,12 +341,11 @@ BEGIN
     clk             => clk             ,
     resetB          => resetB
   );
-    ---V250602 : convCoreValid   => convCoreValid   ,
 
   i1_c2dConvCoreCtrl : c2dConvCoreCtrl
   PORT MAP(
-    endOfConv2D     => endOfConv2D     ,  ---V250602
-    extraOutEn      => extraOutEnI     ,  ---V250818
+    endOfConv2D     => endOfConv2D     ,
+    extraOutEn      => extraOutEnI     ,
     kerBufInit      => kerBufInit      ,
     kerBufLdEn      => kerBufLdEn      ,
     kerBufRdEn      => kerBufRdEn      ,
@@ -426,17 +353,17 @@ BEGIN
     imgBufLdEn      => imgBufLdEn      ,
     imgBufRdEn      => imgBufRdEn      ,
     addTreeEn       => addTreeEn       ,
-    outHeightCnt    => outHeightCntI   ,  ---V250117
+    outHeightCnt    => outHeightCntI   ,
     npuStart        => npuStart        ,
-    convCoreEnd     => convCoreEndI    ,  ---V250114
+    convCoreEnd     => convCoreEndI    ,
     convCoreValid   => convCoreValid   ,
     imgBufFull      => imgBufFull      ,
     imgBufEmpty     => imgBufEmpty     ,
     kerBufFull      => kerBufFull      ,
-    kernelWidth     => kernelWidth     , ---V250116 : START
+    kernelWidth     => kernelWidth     ,
     kernelHeight    => kernelHeight    ,
     imageWidth      => imageWidth      ,
-    imageHeight     => imageHeight     , ---V250116 : END
+    imageHeight     => imageHeight     ,
     clk             => clk             ,
     resetB          => resetB
   );
@@ -455,7 +382,7 @@ BEGIN
     resetB          => resetB
   );
 
-  ---V250530 : for timing control with ARX platform
+  --- for timing control with ARX platform
   capt1P : PROCESS(all)
   BEGIN
     if resetB='0' then 
@@ -473,7 +400,6 @@ BEGIN
     end if;
   END PROCESS;
 
-  ---V250602
   i3_c2dOutBuf : c2dOutBuf
   GENERIC MAP(
     numOfData       => OUTPUT_BUF_WIDTH   ,
@@ -481,7 +407,7 @@ BEGIN
     sizeOfBitOut    => OUTPUT_BUF_BITSIZE
   )
   PORT MAP(
-    outValid        => convCoreValidO  ,  ---V250818
+    outValid        => convCoreValidO  ,
     bufOut          => convCoreOut     ,
     bufInit         => imgBufInit      ,
     bufEn           => convCoreValidI  ,
@@ -491,36 +417,6 @@ BEGIN
     clk             => clk             ,
     resetB          => resetB
   );
-    ---V250818 : outValid        => convCoreValid   ,
-
-
-  -----V250116
-  --i_c2dConvInput : c2dConvInput
-  --GENERIC MAP(
-  --  numOfWidth      => KERNEL_BUF_WIDTH   ,
-  --  numOfHeight     => KERNEL_BUF_HEIGHT  ,
-  --  sizeOfBitImgIn  => IMAGE_BUF_BITSIZE  ,
-  --  sizeOfBitKerIn  => KERNEL_BUF_BITSIZE
-  --)
-  --PORT MAP(
-  --  kerBufLineIn    => kerBufLineIn    ,
-  --  imgBufLineIn    => imgBufLineIn    ,
-  --  kerBufInit      => kerBufInit      ,  -- from Controller
-  --  kerBufLdEn      => kerBufLdEn      ,
-  --  kerBufRdEn      => kerBufRdEn      ,
-  --  imgBufInit      => imgBufInit      ,
-  --  imgBufLdEn      => imgBufLdEn      ,
-  --  imgBufRdEn      => imgBufRdEn      ,
-  --  kernelWidth     => kernelWidth     ,
-  --  kernelHeight    => kernelHeight    ,
-  --  imageWidth      => imageWidth      ,
-  --  imageHeight     => imageHeight     ,
-  --  outHeightCnt    => outHeightCntI   , ---V250117
-  --  clk             => clk             ,
-  --  resetB          => resetB
-  --);
-  -- END MAPPING
-
   ------------------------------------------------------------------------------
   -- PROCESSES
   ------------------------------------------------------------------------------

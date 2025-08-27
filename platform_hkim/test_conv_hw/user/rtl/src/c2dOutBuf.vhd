@@ -46,15 +46,12 @@
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
                 USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                --USE ieee.fixed_pkg.all;
 
 --==============================================================================
 ENTITY c2dOutBuf IS
@@ -105,10 +102,6 @@ ARCHITECTURE rtl OF c2dOutBuf IS
   
   SIGNAL  bufCntInI   : NATURAL RANGE 0 TO numOfData-1;
   CONSTANT  zeroSlv   : outBufType :=(others=>(others=>'0'));
-
-  -- for Monitoring
-  -- synthesis translate_off
-  -- synthesis translate_on
   -- SIGNAL END
 
 BEGIN
@@ -120,8 +113,6 @@ BEGIN
   ------------------------------------------------------------------------------
   -- SIGNAL CONNECTION
   ------------------------------------------------------------------------------
-  -- kerBufLineIn  <=kerBufLineInI;
-  -- imgBufLineIn  <=imgBufLineInI;
   -- END CONNECTION
 
   ------------------------------------------------------------------------------
@@ -140,7 +131,6 @@ BEGIN
       if    (bufInit) then outBufData <=zeroSlv;
       elsif (bufEn) then
         outBufData(bufCntInI) <=std_logic_vector(resize(signed(bufIn), sizeOfBitOut));
-        --outBufData(bufCntInI) <=bufIn(bufIn'LEFT) & bufIn(sizeOfBitOut-2 downto 0);
       end if;
     end if;
   END PROCESS;

@@ -41,18 +41,14 @@
 -- File Name : pkgFuncNpuConv2d.vhd
 --==============================================================================
 -- Rev.      Des.    Function
--- V210000   hkim    Package for pkgFuncNpuConv2d
+-- V241122   hkim    Package for pkgFuncNpuConv2d
 --==============================================================================
 
 --==============================================================================
-LIBRARY std;    USE std.textio.all;                     -- for Text
+LIBRARY std;    USE std.textio.all;
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_textio.all;          -- for Text
-                --USE ieee.std_logic_unsigned.all;        -- for unsigned
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;               -- for sfixed
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 LIBRARY work;   USE work.pkgConstNpuConv2d.all;
                 USE work.pkgTypeNpuConv2d.all;
 --==============================================================================

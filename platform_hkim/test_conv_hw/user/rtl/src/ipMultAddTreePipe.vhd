@@ -42,25 +42,20 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V241203    hkim  Pipelined Muliplier-Adder Tree
--- V250103    hkim  Code revision
--- V250115    hkim  Coding error is fixed
 --==============================================================================
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
-                USE ieee.numeric_std.all;                       -- shift_right(), shift_left()
+                USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY ipMultAddTreePipe IS
 GENERIC(
-  numOfInput      : NATURAL := 8;   -- number of input
-  sizeOfBitInA    : NATURAL := 8;   -- bit size of input A
-  sizeOfBitInB    : NATURAL := 8    -- bit size of input B
+  numOfInput      : NATURAL := 8;
+  sizeOfBitInA    : NATURAL := 8;
+  sizeOfBitInB    : NATURAL := 8
 );
 PORT(
   outValid        : out std_logic;
@@ -81,8 +76,8 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
   ------------------------------------------------------------------------------
   COMPONENT ipRcsvPipeAddTree
   GENERIC(
-    numOfInput      : NATURAL := 8;   -- number of input
-    sizeOfBitIn     : NATURAL := 8    -- bit size of input
+    numOfInput      : NATURAL := 8;
+    sizeOfBitIn     : NATURAL := 8
   );
   PORT(
     outValid        : out std_logic;
@@ -98,7 +93,6 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
   ------------------------------------------------------------------------------
   -- TYPES
   ------------------------------------------------------------------------------
-  --CONSTANT  MULT_BIT_WIDTH  : NATURAL := sizeOfBitInA +sizeOfBitInB;
   TYPE dataArrayAType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitInA-1 downto 0);
   TYPE dataArrayBType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitInB-1 downto 0);
   TYPE multArrayType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitInA+sizeOfBitInB-1 downto 0);
@@ -150,8 +144,7 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
   SIGNAL  multOutArrayI   : multArrayType(0 TO numOfInput-1);
   SIGNAL  inDataAddTreeI  : std_logic_vector(numOfInput*(sizeOfBitInA+sizeOfBitInB)-1 downto 0);
   SIGNAL  enableD1I       : std_logic;
-  SIGNAL  enableAddTreeI  : std_logic;  ---V250103
-  ---V250115 : SIGNAL  inDataArrayBI   : dataArrayAType(0 TO numOfInput-1);
+  SIGNAL  enableAddTreeI  : std_logic;
   -- SIGNAL END
 
 BEGIN
@@ -200,8 +193,7 @@ BEGIN
     END PROCESS;
 
     -- Array-to-Vector for Adder Tree
-    enableAddTreeI <=enableD1I; ---V250103
-    --enableAddTreeI <=enable OR enableD1I; ---V250103
+    enableAddTreeI <=enableD1I;
     inDataAddTreeI <=arrayToVector( multOutArrayI, numOfInput, sizeOfBitInA+sizeOfBitInB );
 
     u_ipRcsvPipeAddTree : ipRcsvPipeAddTree
@@ -213,12 +205,10 @@ BEGIN
       outValid        => outValid        ,
       outQ            => outQ            ,
       inVec           => inDataAddTreeI  ,
-      enable          => enableAddTreeI  ,  ---V250103
+      enable          => enableAddTreeI  ,
       clk             => clk             ,
       resetB          => resetB
     );
-      ---V250103 : enable          => enableD1I       ,
-
   END GENERATE;
   ------------------------------------------------------------------------------
   -- END GENERATE

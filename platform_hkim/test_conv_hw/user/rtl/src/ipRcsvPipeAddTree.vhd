@@ -47,11 +47,8 @@
 
 --==============================================================================
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
-                --USE ieee.std_logic_unsigned.all;
-                --USE ieee.std_logic_arith.conv_std_logic_vector;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-                --USE ieee.fixed_pkg.all;
 --==============================================================================
 
 --==============================================================================
@@ -70,9 +67,6 @@ PORT(
 );
 END;
 --==============================================================================
--- alternative definition
--- outQ            : out std_logic_vector(sizeOfBitIn+NATURAL(POSITIVE(ceil(log2(real(numOfInput)))))-1 downto 0);
--- outQ            : out std_logic_vector(sizeOfBitOut-1 downto 0);
 
 --==============================================================================
 ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
@@ -194,8 +188,6 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
   ------------------------------------------------------------------------------
   CONSTANT TREE_INPUT_RIGHT   : NATURAL :=numOfInput/2;
   CONSTANT TREE_INPUT_LEFT    : NATURAL :=numOfInput -TREE_INPUT_RIGHT; -- TREE_INPUT_LEFT >= TREE_INPUT_RIGHT
-  --CONSTANT TREE_INPUT_LEFT    : NATURAL :=getPowerOfTwo(numOfInput);
-  --CONSTANT TREE_INPUT_RIGHT   : NATURAL :=numOfInput -TREE_INPUT_LEFT;
   CONSTANT TREE_DEPTH_LEFT    : NATURAL :=getTreeDepth(TREE_INPUT_LEFT);
   CONSTANT TREE_DEPTH_RIGHT   : NATURAL :=getTreeDepth(TREE_INPUT_RIGHT);
   CONSTANT TREE_DEPTH_DIFF    : NATURAL :=TREE_DEPTH_LEFT -TREE_DEPTH_RIGHT;
@@ -228,16 +220,6 @@ BEGIN
   BASE_CASE1_GEN0 : IF ( numOfInput = 1 ) GENERATE
     outQ <=inDataArrayI(0);
     outValid <=enable;
-    ---V250103 : baseCase1GenP : PROCESS(all)
-    ---V250103 : BEGIN
-    ---V250103 :   if resetB='0' then outQ <=(others=>'0');
-    ---V250103 :   elsif (rising_edge(clk)) then
-    ---V250103 :     if (enable) then
-    ---V250103 :       outQ <=inDataArrayI(0);
-    ---V250103 :       outValid <=enable;
-    ---V250103 :     end if;
-    ---V250103 :   end if;
-    ---V250103 : END PROCESS;
   END GENERATE;
   ------------------------------------------------------------------------------
 
@@ -359,22 +341,6 @@ BEGIN
     ----------------------------------------------------------------------------
   END GENERATE;
   -- END GENERATE
-
-  ------------------------------------------------------------------------------
-  -- SIGNAL CONNECTION
-  ------------------------------------------------------------------------------
-  -- END CONNECTION
-
-  ------------------------------------------------------------------------------
-  -- PORT MAPPING
-  ------------------------------------------------------------------------------
-  -- EXAMPLE
-  -- END MAPPING
-
-  ------------------------------------------------------------------------------
-  -- PROCESSES
-  ------------------------------------------------------------------------------
-  ------------------------------------------------------------------------------
 
   -- synthesis translate_off
   ------------------------------------------------------------------------------
