@@ -41,7 +41,7 @@
 -- File Name : c2dConvCoreCtrl.vhd
 --==============================================================================
 -- Rev.       Des.  Function
--- V250109    hkim  Function Description
+-- V250109    hkim  2D Conv Controller
 --==============================================================================
 
 --==============================================================================
@@ -64,9 +64,9 @@ PORT(
   imgBufInit      : out std_logic;
   imgBufLdEn      : out std_logic;
   imgBufRdEn      : out std_logic;
-  addTreeEn       : out std_logic;  -- TBD
+  addTreeEn       : out std_logic;
   outHeightCnt    : out std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
-  npuStart        : in  std_logic;  -- NPU Start
+  npuStart        : in  std_logic;
   convCoreEnd     : in  std_logic;
   convCoreValid   : in  std_logic;
   imgBufFull      : in  std_logic;
@@ -92,7 +92,6 @@ ARCHITECTURE rtl OF c2dConvCoreCtrl IS
   ------------------------------------------------------------------------------
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
-  -- FSM Example
   TYPE CTRL_STT_MAIN IS (
     idleStt,                        -- IDLE State
     waitStartStt,                   -- Wait 2D Conv NPU Start State
@@ -111,7 +110,6 @@ ARCHITECTURE rtl OF c2dConvCoreCtrl IS
     postStt                         -- Post State
   );
   SIGNAL  ctrlMainSttI    : CTRL_STT_MAIN;
-
   SIGNAL  kerBufInitI     : std_logic;
   SIGNAL  kerBufLdStartI  : std_logic;
   SIGNAL  kerBufLdEnI     : std_logic;
@@ -194,7 +192,7 @@ BEGIN
         when  extraChkStt       =>
                 if outHeightCntI=MAX_OUTPUT_NUM then ctrlMainSttI <=restStt;
                 else                                 ctrlMainSttI <=extraOutStt; end if;
-        when  extraOutStt       => ctrlMainSttI <=extraChkStt;
+        when  extraOutStt       => ctrlMainSttI <=extraChkStt;        -- Extra Out State
         when  restStt           => ctrlMainSttI <=postStt;            -- Rest State
         when  postStt           => ctrlMainSttI <=idleStt;            -- Post State
       end case;
@@ -203,7 +201,8 @@ BEGIN
 
   outNumWidthIP : PROCESS(all)
   BEGIN
-    if resetB='0' then outNumWidthI <=0; outNumHeightI <=0;
+    if resetB='0' then outNumWidthI <=0;
+                       outNumHeightI <=0;
     elsif rising_edge(clk) then
       if ctrlMainSttI=calcOutNumStt then
         outNumWidthI <=to_integer(unsigned(imageWidth)) - to_integer(unsigned(kernelWidth)) + 1;
@@ -234,7 +233,8 @@ BEGIN
   -- Image Buffer Initialization
   imgBufInitIP : PROCESS(all)
   BEGIN
-    if resetB='0' then imgBufInitI <='0'; kerBufInitI <='0';
+    if resetB='0' then imgBufInitI <='0';
+                       kerBufInitI <='0';
     elsif (rising_edge(clk)) then
       if ctrlMainSttI=imgBufInitStt then imgBufInitI <='1';
                                          kerBufInitI <='1';
@@ -247,7 +247,8 @@ BEGIN
   -- Image Buffer Load Start
   imgBufLdStartIP : PROCESS(all)
   BEGIN
-    if resetB='0' then imgBufLdStartI <='0'; kerBufLdStartI <='0';
+    if resetB='0' then imgBufLdStartI <='0';
+                       kerBufLdStartI <='0';
     elsif rising_edge(clk) then
       imgBufLdStartI <=imgBufInitI;
       kerBufLdStartI <=kerBufInitI;
@@ -257,7 +258,8 @@ BEGIN
   -- Image Buffer Load Enable
   imgBufLdEnIP : PROCESS(all)
   BEGIN
-    if resetB='0' then imgBufLdEnI <='0'; kerBufLdEnI <='0';
+    if resetB='0' then imgBufLdEnI <='0';
+                       kerBufLdEnI <='0';
     elsif rising_edge(clk) then
       if ctrlMainSttI=imgBufLdStt then imgBufLdEnI <='1';
         if imgBufLdCntI <= to_integer(unsigned(kernelWidth))-1 then kerBufLdEnI <='1';

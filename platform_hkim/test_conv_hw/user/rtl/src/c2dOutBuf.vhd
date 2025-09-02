@@ -102,6 +102,10 @@ ARCHITECTURE rtl OF c2dOutBuf IS
   
   SIGNAL  bufCntInI   : NATURAL RANGE 0 TO numOfData-1;
   CONSTANT  zeroSlv   : outBufType :=(others=>(others=>'0'));
+
+  -- for Monitoring
+  -- synthesis translate_off
+  -- synthesis translate_on
   -- SIGNAL END
 
 BEGIN
@@ -128,8 +132,8 @@ BEGIN
   BEGIN
     if resetB='0' then outBufData <=zeroSlv;
     elsif rising_edge(clk) then
-      if    (bufInit) then outBufData <=zeroSlv;
-      elsif (bufEn) then
+      if    (bufInit='1') then outBufData <=zeroSlv;
+      elsif (bufEn='1') then
         outBufData(bufCntInI) <=std_logic_vector(resize(signed(bufIn), sizeOfBitOut));
       end if;
     end if;
@@ -140,9 +144,9 @@ BEGIN
   BEGIN
     if resetB='0' then bufCntInI <=0;
     elsif rising_edge(clk) then
-      if    (bufInit) then bufCntInI <=0;
-      elsif (endOfRow) then bufCntInI <=0;
-      elsif (bufEn) then
+      if    (bufInit='1') then bufCntInI <=0;
+      elsif (endOfRow='1') then bufCntInI <=0;
+      elsif (bufEn='1') then
         if bufCntInI=to_integer(unsigned(numRow))-1 then bufCntInI <=0;
         else bufCntInI <=bufCntInI +1; end if;
       end if;
@@ -155,8 +159,8 @@ BEGIN
   BEGIN
     if resetB='0' then bufOut <=(others=>'0');
     elsif rising_edge(clk) then
-      if    (bufInit) then bufOut <=(others=>'0');
-      elsif (endOfRow) then
+      if    (bufInit='1') then bufOut <=(others=>'0');
+      elsif (endOfRow='1') then
         bufOut <=arrayToVector( outBufData, numOfData, sizeOfBitOut );
       end if;
     end if;

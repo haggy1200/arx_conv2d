@@ -150,7 +150,6 @@ ARCHITECTURE rtl OF c2dConvCoreLine IS
   SIGNAL  kerBufLineOutI  : std_logic_vector(numOfInput*sizeOfBitKerIn-1 downto 0);
   SIGNAL  outValidI       : std_logic;
   SIGNAL  outQI           : std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfInput))))-1 downto 0);
-
   -- synthesis translate_off
   TYPE kerBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitKerIn-1 downto 0);
   TYPE imgBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitImgIn-1 downto 0);
@@ -252,11 +251,15 @@ BEGIN
   );
   -- END MAPPING
 
+  ------------------------------------------------------------------------------
+  -- PROCESSES
+  ------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
+
   -- synthesis translate_off
   ------------------------------------------------------------------------------
   -- TDD
   ------------------------------------------------------------------------------
-  ---V250114
   monitorP : PROCESS(all)
   BEGIN
     kerBufLineOutVecI <=vectorToArrayK( kerBufLineOutI, numOfInput, sizeOfBitKerIn);

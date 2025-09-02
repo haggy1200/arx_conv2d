@@ -77,7 +77,6 @@ ARCHITECTURE rtl OF ipFifo IS
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
   TYPE ipFifoType IS ARRAY(0 TO sizeOfDepth-1) OF std_logic_vector(sizeOfWidth-1 downto 0);
-
   SIGNAL  fifoRegI  : ipFifoType;
   -- SIGNAL END
 

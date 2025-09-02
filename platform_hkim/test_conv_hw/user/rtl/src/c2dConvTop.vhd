@@ -59,7 +59,7 @@ PORT(
   endOfConv2D     : out std_logic;
   convCoreValid   : out std_logic;
   convCoreOut     : out std_logic_vector(OUTPUT_BUF_WIDTH*OUTPUT_BUF_BITSIZE-1 downto 0);
-  kerInBufLdInit  : in  std_logic;                                              -- Kernel load init
+  kerInBufLdInit  : in  std_logic;
   kerInBufLdEn    : in  std_logic;
   kerInBufLdEnd   : in  std_logic;
   kerInBufDataIn  : in  std_logic_vector(KERNEL_BUF_WIDTH*KERNEL_BUF_BITSIZE-1 downto 0);
@@ -131,7 +131,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
     imgBufLdEn      : in  std_logic;
     imgBufRdEn      : in  std_logic;
     imgBufLineIn    : in  std_logic_vector(numOfHeight*sizeOfBitImgIn-1 downto 0);
-    addTreeEn       : in  std_logic;  -- TBD
+    addTreeEn       : in  std_logic;
     clk             : in  std_logic;
     resetB          : in  std_logic
   );
@@ -147,9 +147,9 @@ ARCHITECTURE rtl OF c2dConvTop IS
     imgBufInit      : out std_logic;
     imgBufLdEn      : out std_logic;
     imgBufRdEn      : out std_logic;
-    addTreeEn       : out std_logic;  -- TBD
+    addTreeEn       : out std_logic;
     outHeightCnt    : out std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
-    npuStart        : in  std_logic;  -- NPU Start
+    npuStart        : in  std_logic;
     convCoreEnd     : in  std_logic;
     convCoreValid   : in  std_logic;
     imgBufFull      : in  std_logic;
@@ -178,7 +178,6 @@ ARCHITECTURE rtl OF c2dConvTop IS
   );
   END COMPONENT;
 
-  ---V250602
   COMPONENT c2dOutBuf
   GENERIC(
     numOfData       : NATURAL := 8;   -- number of data
@@ -208,7 +207,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
   SIGNAL  imgBufInit      : std_logic;
   SIGNAL  imgBufLdEn      : std_logic;
   SIGNAL  imgBufRdEn      : std_logic;
-  SIGNAL  addTreeEn       : std_logic;  -- TBD
+  SIGNAL  addTreeEn       : std_logic;
   SIGNAL  imgBufFull      : std_logic;
   SIGNAL  imgBufEmpty     : std_logic;
   SIGNAL  kerBufFull      : std_logic;
@@ -329,7 +328,7 @@ BEGIN
     kerBufFull      => kerBufFull      ,
     imgBufFull      => imgBufFull      ,
     imgBufEmpty     => imgBufEmpty     ,
-    kerBufInit      => kerBufInitI     ,
+    kerBufInit      => kerBufInitI     ,  -- from Signal FIFO(delayed)
     kerBufLdEn      => kerBufLdEnI     ,
     kerBufRdEn      => kerBufRdEnI     ,
     kerBufLineIn    => kerBufLineIn    ,
@@ -368,7 +367,6 @@ BEGIN
     resetB          => resetB
   );
 
-  -- Signal FIFO
   i2_ipFifo : ipFifo
   GENERIC MAP(
     sizeOfWidth     => 7,
@@ -417,6 +415,8 @@ BEGIN
     clk             => clk             ,
     resetB          => resetB
   );
+  -- END MAPPING
+
   ------------------------------------------------------------------------------
   -- PROCESSES
   ------------------------------------------------------------------------------

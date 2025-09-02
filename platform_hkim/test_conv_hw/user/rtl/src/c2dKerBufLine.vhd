@@ -42,7 +42,6 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V241202    hkim  Kernel Line Buffer
--- V241226    hkim  port kerBufRdEn is added
 --==============================================================================
 
 --==============================================================================
@@ -113,9 +112,9 @@ BEGIN
     if resetB='0' then
       FOR i IN 0 TO numOfInput-1 LOOP kernelBufI <=(others=>zeroSlv); END LOOP;
     elsif rising_edge(clk) then
-      if (kerBufInit) then  -- Initialization
+      if (kerBufInit='1') then  -- Initialization
         FOR i IN 0 TO numOfInput-1 LOOP kernelBufI <=(others=>zeroSlv); END LOOP;
-      elsif (kerBufLdEn) then -- Load Kernel Data
+      elsif (kerBufLdEn='1') then -- Load Kernel Data
         kernelBufI(numOfInput-1) <=kerBufLineIn;
         FOR i IN 0 TO (numOfInput-2) LOOP kernelBufI(i) <=kernelBufI(i+1); END LOOP;
       end if;
@@ -126,8 +125,8 @@ BEGIN
   BEGIN
     if resetB='0' then elemCntI <=0;
     elsif (rising_edge(clk)) then
-      if (kerBufInit) then elemCntI <=0;
-      elsif (kerBufLdEn) then
+      if (kerBufInit='1') then elemCntI <=0;
+      elsif (kerBufLdEn='1') then
         if elemCntI=numOfInput-1 then elemCntI <=0;
         else elemCntI <=elemCntI +1; end if;
       end if;
@@ -138,7 +137,7 @@ BEGIN
   BEGIN
     if resetB='0' then kernelFullI <='0';
     elsif (rising_edge(clk)) then
-      if (kerBufInit) then kernelFullI <='0';
+      if (kerBufInit='1') then kernelFullI <='0';
       elsif elemCntI=numOfInput-1 then kernelFullI <='1';
       end if;
     end if;
@@ -148,8 +147,8 @@ BEGIN
   BEGIN
     if resetB='0' then kerBufLineOut <=(others=>'0');
     elsif rising_edge(clk) then
-      if (kerBufRdEn) then
-        kerBufLineOut <=arrayToVector( kernelBufI, numOfInput, sizeOfBitIn );
+      if (kerBufRdEn='1') then
+        kerBufLineOut <=arrayToVector( kernelBufI, numOfInput, sizeOfBitIn ); -- Array to Vector
       end if;
     end if;
   END PROCESS;

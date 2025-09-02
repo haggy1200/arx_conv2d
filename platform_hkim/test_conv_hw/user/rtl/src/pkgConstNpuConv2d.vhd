@@ -70,7 +70,7 @@
 --==============================================================================
 
 --==============================================================================
-LIBRARY std;    USE std.textio.all;
+LIBRARY std;    USE std.textio.all;                     -- for Text
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
@@ -83,23 +83,30 @@ PACKAGE pkgConstNpuConv2d IS
   -- Constant
   ------------------------------------------------------------------------------
   -- IMAGE
+  CONSTANT IMAGE_BUF_WIDTH        : NATURAL :=     8;  -- Image Buffer Width,  HW
+  CONSTANT IMAGE_BUF_HEIGHT       : NATURAL :=     8;  -- Image Buffer Height, HW
+  CONSTANT IMAGE_BUF_BITSIZE      : NATURAL :=    32;  -- Image Buffer Element Bit Size (32-bit 2's complement)
+
   CONSTANT IMAGE_WIDTH            : NATURAL :=     8;  -- Image Width, Real  -> convert to a variable later
   CONSTANT IMAGE_HEIGHT           : NATURAL :=     8;  -- Image Height, Real -> convert to a variable later
-  CONSTANT IMAGE_BUF_WIDTH        : NATURAL :=    14;  -- Image Buffer Width,  HW
-  CONSTANT IMAGE_BUF_HEIGHT       : NATURAL :=    14;  -- Image Buffer Height, HW
-  CONSTANT IMAGE_BUF_BITSIZE      : NATURAL :=    32;  -- Image Buffer Element Bit Size (32-bit 2's complement)
   CONSTANT IMAGE_BUF_WIDTH_BITSIZE  : NATURAL :=   8;
   CONSTANT IMAGE_BUF_HEIGHT_BITSIZE : NATURAL :=   8;
 
   -- KERNEL
+  CONSTANT KERNEL_BUF_WIDTH       : NATURAL :=     3;  -- Kernel Buffer Width,  HW
+  CONSTANT KERNEL_BUF_HEIGHT      : NATURAL :=     3;  -- Kernel Buffer Height, HW
+  CONSTANT KERNEL_BUF_BITSIZE     : NATURAL :=    32;  -- Kernel Buffer Element Bit Size (32-bit 2's complement)
+
   CONSTANT KERNEL_ORDER           : NATURAL :=     0;  -- Kernel Buffer Order, 0=Normal, 1=Inverse
   CONSTANT KERNEL_WIDTH           : NATURAL :=     3;  -- Kernel Width,  Real -> convert to a variable later
   CONSTANT KERNEL_HEIGHT          : NATURAL :=     3;  -- Kernel Height, Real -> convert to a variable later
-  CONSTANT KERNEL_BUF_WIDTH       : NATURAL :=     7;  -- Kernel Buffer Width,  HW
-  CONSTANT KERNEL_BUF_HEIGHT      : NATURAL :=     7;  -- Kernel Buffer Height, HW
-  CONSTANT KERNEL_BUF_BITSIZE     : NATURAL :=    32;  -- Kernel Buffer Element Bit Size (32-bit 2's complement)
   CONSTANT KERNEL_BUF_WIDTH_BITSIZE  : NATURAL :=  8;
   CONSTANT KERNEL_BUF_HEIGHT_BITSIZE : NATURAL :=  8;
+
+  -- OUTPUT : O = floor{ ( image + 2 x padding - kernel ) / stride } + 1
+  CONSTANT OUTPUT_BUF_WIDTH       : NATURAL :=     8;
+  CONSTANT OUTPUT_BUF_BITSIZE     : NATURAL := IMAGE_BUF_BITSIZE;
+  CONSTANT MAX_OUTPUT_NUM         : NATURAL :=     8; -- for Platform
 
   -- PADDING
   CONSTANT PADDING                : NATURAL :=     0;  -- Padding Amount; 0=Off;
@@ -109,20 +116,17 @@ PACKAGE pkgConstNpuConv2d IS
   CONSTANT STRIDE_WIDTH           : NATURAL :=     1;  -- Stride Width (TBD)
   CONSTANT STRIDE_HEIGHT          : NATURAL :=     1;  -- Stride Height (TBD)
 
-  -- OUTPUT : O = floor{ ( image + 2 x padding - kernel ) / stride } + 1
   CONSTANT OUTPUT_WIDTH           : POSITIVE := POSITIVE( floor( ( real(IMAGE_WIDTH     ) +(2.0)*real(PADDING) -real(KERNEL_WIDTH     ) ) / real(STRIDE_WIDTH ) ) +1.0 );
   CONSTANT OUTPUT_HEIGHT          : POSITIVE := POSITIVE( floor( ( real(IMAGE_HEIGHT    ) +(2.0)*real(PADDING) -real(KERNEL_HEIGHT    ) ) / real(STRIDE_HEIGHT) ) +1.0 );
   CONSTANT OUTPUT_BUF_HEIGHT      : POSITIVE := POSITIVE( floor( ( real(IMAGE_BUF_HEIGHT) +(2.0)*real(PADDING) -real(KERNEL_BUF_HEIGHT) ) / real(STRIDE_HEIGHT) ) +1.0 );
-  CONSTANT OUTPUT_BUF_WIDTH       : NATURAL := 8;
-  CONSTANT OUTPUT_BUF_BITSIZE     : NATURAL := IMAGE_BUF_BITSIZE;
   CONSTANT OUTPUT_BUF_WIDTH_BITSIZE : POSITIVE := IMAGE_BUF_BITSIZE + KERNEL_BUF_BITSIZE + INTEGER(ceil(log2(real(IMAGE_BUF_WIDTH)))) + INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))));
-  CONSTANT MAX_OUTPUT_NUM         : NATURAL :=     8; -- for Platform
 
   -- ADDER TREE 1
   CONSTANT ADD_TREE_NUM_INPUT     : NATURAL  := KERNEL_BUF_WIDTH; -- Number of input for adder tree
   CONSTANT ADD_TREE_BITSIZE_IN    : NATURAL  := 8;                -- Input bit size of adder tree
   CONSTANT ADD_TREE_NUM_STAGE     : POSITIVE := POSITIVE(ceil(log2(real(ADD_TREE_NUM_INPUT))));
   CONSTANT ADD_TREE_BITSIZE_OUT   : NATURAL  := ADD_TREE_BITSIZE_IN + ADD_TREE_NUM_STAGE;
+  ------------------------------------------------------------------------------
 END PACKAGE;
 
 PACKAGE BODY pkgConstNpuConv2d IS

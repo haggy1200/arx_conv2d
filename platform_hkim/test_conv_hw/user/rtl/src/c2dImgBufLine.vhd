@@ -118,9 +118,9 @@ BEGIN
     if resetB='0' then
       FOR i IN 0 TO numOfInput-1 LOOP imageBufI <=(others=>zeroSlv); END LOOP;
     elsif rising_edge(clk) then
-      if (imgBufInit) then  -- Initialization
+      if (imgBufInit='1') then  -- Initialization
         FOR i IN 0 TO numOfInput-1 LOOP imageBufI <=(others=>zeroSlv); END LOOP;
-      elsif (imgBufLdEn) then -- Load Kernel Data
+      elsif (imgBufLdEn='1') then -- Load Kernel Data
         imageBufI(numOfInput-1) <=imgBufLineIn;
         FOR i IN 0 TO (numOfInput-2) LOOP imageBufI(i) <=imageBufI(i+1); END LOOP;
       end if;
@@ -131,8 +131,8 @@ BEGIN
   BEGIN
     if resetB='0' then elemCntI <=0;
     elsif (rising_edge(clk)) then
-      if (imgBufInit) then elemCntI <=0;
-      elsif (imgBufLdEn) then
+      if (imgBufInit='1') then elemCntI <=0;
+      elsif (imgBufLdEn='1') then -- increase
         if elemCntI=IMAGE_BUF_WIDTH-1 then elemCntI <=0;
         else elemCntI <=elemCntI +1; end if;
       end if;
@@ -143,7 +143,7 @@ BEGIN
   BEGIN
     if resetB='0' then imgBufLineOut <=(others=>'0');
     elsif rising_edge(clk) then
-      if (imgBufRdEn) then
+      if (imgBufRdEn='1') then
           imgBufLineOut <=arrayToVector( imageBufI, numOfInput, sizeOfBitIn );
       end if;
     end if;

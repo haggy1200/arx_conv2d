@@ -76,7 +76,7 @@ PORT(
   imgBufLdEn      : in  std_logic;
   imgBufRdEn      : in  std_logic;
   imgBufLineIn    : in  std_logic_vector(numOfHeight*sizeOfBitImgIn-1 downto 0);
-  addTreeEn       : in  std_logic;  -- TBD
+  addTreeEn       : in  std_logic;
   clk             : in  std_logic;
   resetB          : in  std_logic
 );
@@ -276,6 +276,7 @@ BEGIN
       clk             => clk             ,
       resetB          => resetB
     );
+
     i_ipMonoPulseSeFF : ipMonoPulseSeFF
     PORT MAP(
       q               => OPEN            ,

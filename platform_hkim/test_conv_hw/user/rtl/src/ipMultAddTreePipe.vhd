@@ -53,9 +53,9 @@ LIBRARY ieee;   USE ieee.std_logic_1164.all;
 --==============================================================================
 ENTITY ipMultAddTreePipe IS
 GENERIC(
-  numOfInput      : NATURAL := 8;
-  sizeOfBitInA    : NATURAL := 8;
-  sizeOfBitInB    : NATURAL := 8
+  numOfInput      : NATURAL := 8;   -- number of input
+  sizeOfBitInA    : NATURAL := 8;   -- bit size of input A
+  sizeOfBitInB    : NATURAL := 8    -- bit size of input B
 );
 PORT(
   outValid        : out std_logic;
@@ -76,8 +76,8 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
   ------------------------------------------------------------------------------
   COMPONENT ipRcsvPipeAddTree
   GENERIC(
-    numOfInput      : NATURAL := 8;
-    sizeOfBitIn     : NATURAL := 8
+    numOfInput      : NATURAL := 8;   -- number of input
+    sizeOfBitIn     : NATURAL := 8    -- bit size of input
   );
   PORT(
     outValid        : out std_logic;
@@ -99,9 +99,6 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
 
   ------------------------------------------------------------------------------
   -- FUNCTIONS (scheduled to be moved to the package file)
-  -- FUNCTION vectorToArray( vectorIn : std_logic_vector; arraySize : NATURAL; elemWidth : POSITIVE) RETURN dataArrayAType;
-  -- FUNCTION vectorToArray( vectorIn : std_logic_vector; arraySize : NATURAL; elemWidth : POSITIVE) RETURN dataArrayBType;
-  -- FUNCTION arrayToVector( arrayIn : multArrayType; arraySize : NATURAL; elemWidth : POSITIVE) RETURN std_logic_vector;
   ------------------------------------------------------------------------------
   FUNCTION vectorToArray( vectorIn      : std_logic_vector;
                           arraySize     : NATURAL;
@@ -159,7 +156,7 @@ BEGIN
     BEGIN
       if resetB='0' then outQ <=(others=>'0');
       elsif (rising_edge(clk)) then
-        if (enable) then
+        if (enable='1') then
           outQ <=std_logic_vector(signed(inVecA)*signed(inVecB));
           outValid <=enable;
         end if;
@@ -178,7 +175,7 @@ BEGIN
       BEGIN
         if resetB='0' then multOutArrayI(i) <=(others=>'0');
         elsif (rising_edge(clk)) then
-          if (enable) then
+          if (enable='1') then
             multOutArrayI(i) <=std_logic_vector(signed(inDataArrayAI(i))*signed(inDataArrayBI(i)));
           end if;
         end if;
@@ -209,6 +206,7 @@ BEGIN
       clk             => clk             ,
       resetB          => resetB
     );
+
   END GENERATE;
   ------------------------------------------------------------------------------
   -- END GENERATE

@@ -42,7 +42,6 @@
 --==============================================================================
 -- Rev.       Des.  Function
 -- V241121    hkim  Recursive Pipelined Adder Tree
--- V250103    hkim  Code revision
 --==============================================================================
 
 --==============================================================================
@@ -123,12 +122,6 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
   ------------------------------------------------------------------------------
   -- FUNCTIONS (scheduled to be moved to the package file)
   ------------------------------------------------------------------------------
-  -- FUNCTION arrayToVector( arrayIn : dataArrayType;  arraySize : NATURAL; elemWidth : POSITIVE) RETURN std_logic_vector;
-  -- FUNCTION vectorToArray( vectorIn : std_logic_vector; arraySize : NATURAL; elemWidth : POSITIVE) RETURN dataArrayType;
-  -- FUNCTION getPowerOfTwo( numOfIn : NATURAL) RETURN NATURAL;
-  -- FUNCTION getTreeDepth( numOfIn  : NATURAL) RETURN NATURAL;
-  -- FUNCTION getTreeOutBitWidth( numOfIn : NATURAL; elemWidth : NATURAL) RETURN NATURAL;
-  ------------------------------------------------------------------------------
   FUNCTION arrayToVector( arrayIn       : dataArrayType;
                           arraySize     : NATURAL;
                           elemWidth     : POSITIVE) RETURN std_logic_vector IS
@@ -166,7 +159,7 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
     VARIABLE treeDepth : NATURAL;
   BEGIN
     if (numOfIn=0) then treeDepth :=0;
-    else                treeDepth :=POSITIVE(ceil(log2(real(numOfIn)))); end if;
+    else                treeDepth :=NATURAL(ceil(log2(real(numOfIn)))); end if;
     RETURN treeDepth;
   END FUNCTION;
 
@@ -176,7 +169,7 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
     VARIABLE treeDepth       : NATURAL;
   BEGIN
     if (numOfIn=0) then treeDepth :=0;
-    else                treeDepth :=POSITIVE(ceil(log2(real(numOfIn)))); end if;
+    else                treeDepth :=NATURAL(ceil(log2(real(numOfIn)))); end if;
     if (numOfIn>0) then treeOutBitWidth := elemWidth + treeDepth;
     else                treeOutBitWidth := elemWidth; end if;
     RETURN treeOutBitWidth;
@@ -204,6 +197,7 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
 
   SIGNAL  enableDelayedI          : std_logic;
   SIGNAL  enableAllI              : std_logic;
+  SIGNAL  enableDelayedID1        : std_logic;
   -- SIGNAL END
 
 BEGIN
@@ -230,11 +224,14 @@ BEGIN
     baseCase2GenP : PROCESS(all)
     BEGIN
       if resetB='0' then outQ <=(others=>'0');
+                         outValid <='0';
       elsif (rising_edge(clk)) then
-        if (enable) then
+        if (enable='1') then
           outQ <=std_logic_vector(resize(signed(inDataArrayI(0)), sizeOfBitIn+1) +
                                   resize(signed(inDataArrayI(1)), sizeOfBitIn+1));
-          outValid <=enable;
+          outValid <='1';
+        else
+          outValid <='0';
         end if;
       end if;
     END PROCESS;
@@ -327,7 +324,6 @@ BEGIN
     ----------------------------------------------------------------------------
     -- Extra Delay for enable signal
     ----------------------------------------------------------------------------
-    outValid <=enableDelayedI;
     u_ipDelay : ipDelay
     GENERIC MAP(
       sizeOfDepth     => TREE_DEPTH_LEFT
@@ -338,9 +334,38 @@ BEGIN
       clk             => clk             ,
       resetB          => resetB
     );
+    OUT_VALID_GEN0 : IF ( numOfInput <= 4 ) GENERATE
+      outValid <=enableDelayedID1;
+      delayP : PROCESS(all)
+      BEGIN
+        if resetB='0' then enableDelayedID1 <='0';
+        elsif rising_edge(clk) then
+          enableDelayedID1 <=enableDelayedI;
+        end if;
+      END PROCESS;
+    END GENERATE;
+    OUT_VALID_GEN1 : IF ( numOFInput >  4 ) GENERATE 
+      outValid <=enableDelayedI;
+    END GENERATE;
     ----------------------------------------------------------------------------
   END GENERATE;
   -- END GENERATE
+
+  ------------------------------------------------------------------------------
+  -- SIGNAL CONNECTION
+  ------------------------------------------------------------------------------
+  -- END CONNECTION
+
+  ------------------------------------------------------------------------------
+  -- PORT MAPPING
+  ------------------------------------------------------------------------------
+  -- EXAMPLE
+  -- END MAPPING
+
+  ------------------------------------------------------------------------------
+  -- PROCESSES
+  ------------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
 
   -- synthesis translate_off
   ------------------------------------------------------------------------------

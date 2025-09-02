@@ -123,6 +123,10 @@ ARCHITECTURE rtl OF c2dTransBuf IS
   SIGNAL  bufCntInI   : NATURAL RANGE 0 TO numOfHeight-1;
   SIGNAL  bufCntOutI  : NATURAL RANGE 0 TO numOfHeight-1;
   CONSTANT  zeroSlv   : rowType :=(others=>(others=>'0'));
+
+  -- for Monitoring
+  -- synthesis translate_off
+  -- synthesis translate_on
   -- SIGNAL END
 
 BEGIN
@@ -134,6 +138,8 @@ BEGIN
   ------------------------------------------------------------------------------
   -- SIGNAL CONNECTION
   ------------------------------------------------------------------------------
+  -- kerBufLineIn  <=kerBufLineInI;
+  -- imgBufLineIn  <=imgBufLineInI;
   -- END CONNECTION
 
   ------------------------------------------------------------------------------
@@ -150,8 +156,8 @@ BEGIN
   BEGIN
     if resetB='0' then bufData <=(others=>zeroSlv);
     elsif rising_edge(clk) then
-      if    (bufLdInit) then bufData <=(others=>zeroSlv);
-      elsif (bufLdEn) then
+      if    (bufLdInit='1') then bufData <=(others=>zeroSlv);
+      elsif (bufLdEn='1') then
         bufLineInArrayV :=vectorToArray(bufLineIn, numOfWidth, sizeOfBitIn);
         bufData(bufCntInI) <=bufLineInArrayV;
       end if;
@@ -163,9 +169,9 @@ BEGIN
   BEGIN
     if resetB='0' then bufCntInI <=0;
     elsif rising_edge(clk) then
-      if    (bufLdInit) then bufCntInI <=0;
+      if    (bufLdInit='1') then bufCntInI <=0;
       elsif (bufLdEn='1' AND bufLdEnd='1') then bufCntInI <=0;
-      elsif (bufLdEn) then
+      elsif (bufLdEn='1') then
         if bufCntInI=to_integer(unsigned(numRow))-1 then bufCntInI <=0;
         else bufCntInI <=bufCntInI +1; end if;
       end if;
@@ -179,8 +185,8 @@ BEGIN
   BEGIN
     if resetB='0' then bufLineOut <=(others=>'0');
     elsif rising_edge(clk) then
-      if    (bufRdInit) then bufLineOut <=(others=>'0');
-      elsif (bufRdEn) then
+      if    (bufRdInit='1') then bufLineOut <=(others=>'0');
+      elsif (bufRdEn='1') then
         startPtr := to_integer(unsigned(outHeightCnt));
         endPtr   := to_integer(unsigned(outHeightCnt)) + to_integer(unsigned(numRow));
         FOR i IN 0 TO numOfHeightOut-1 LOOP
@@ -208,8 +214,8 @@ BEGIN
   BEGIN
     if resetB='0' then bufCntOutI <=0;
     elsif rising_edge(clk) then
-      if    (bufRdInit) then bufCntOutI <=0;
-      elsif (bufRdEn) then
+      if    (bufRdInit='1') then bufCntOutI <=0;
+      elsif (bufRdEn='1') then
         if bufCntOutI=to_integer(unsigned(numRow))-1 then bufCntOutI <=0;
         else bufCntOutI <=bufCntOutI +1; end if;
       end if;
