@@ -48,13 +48,20 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dConvCoreCtrl IS
+GENERIC(
+  imageBufWidthBitSize    : NATURAL :=     8; -- IMAGE_BUF_WIDTH_BITSIZE
+  imageBufHeightBitSize   : NATURAL :=     8; -- IMAGE_BUF_HEIGHT_BITSIZE
+  kernelBufWidthBitSize   : NATURAL :=     8; -- KERNEL_BUF_WIDTH_BITSIZE
+  kernelBufHeightBitSize  : NATURAL :=     8; -- KERNEL_BUF_HEIGHT_BITSIZE
+  kernelBufWidth          : NATURAL :=     3; -- KERNEL_BUF_WIDTH, Kernel Buffer Width, HW
+  imageBufWidth           : NATURAL :=    14; -- IMAGE_BUF_WIDTH , Image Buffer Width,  HW
+  imageBufHeight          : NATURAL :=    14; -- IMAGE_BUF_HEIGHT, Image Buffer Height, HW
+  maxOutputNum            : NATURAL :=    16  -- MAX_OUTPUT_NUM  , for Platform
+);
 PORT(
   endOfConv2D     : out std_logic;
   extraOutEn      : out std_logic;
@@ -65,17 +72,17 @@ PORT(
   imgBufLdEn      : out std_logic;
   imgBufRdEn      : out std_logic;
   addTreeEn       : out std_logic;
-  outHeightCnt    : out std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
+  outHeightCnt    : out std_logic_vector(imageBufHeightBitSize-1 downto 0);
   npuStart        : in  std_logic;
   convCoreEnd     : in  std_logic;
   convCoreValid   : in  std_logic;
   imgBufFull      : in  std_logic;
   imgBufEmpty     : in  std_logic;
   kerBufFull      : in  std_logic;
-  kernelWidth     : in  std_logic_vector(KERNEL_BUF_WIDTH_BITSIZE-1 downto 0);
-  kernelHeight    : in  std_logic_vector(KERNEL_BUF_HEIGHT_BITSIZE-1 downto 0);
-  imageWidth      : in  std_logic_vector(IMAGE_BUF_WIDTH_BITSIZE-1 downto 0);
-  imageHeight     : in  std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
+  kernelWidth     : in  std_logic_vector(kernelBufWidthBitSize-1 downto 0);
+  kernelHeight    : in  std_logic_vector(kernelBufHeightBitSize-1 downto 0);
+  imageWidth      : in  std_logic_vector(imageBufWidthBitSize-1 downto 0);
+  imageHeight     : in  std_logic_vector(imageBufHeightBitSize-1 downto 0);
   clk             : in  std_logic;
   resetB          : in  std_logic
 );
@@ -92,6 +99,7 @@ ARCHITECTURE rtl OF c2dConvCoreCtrl IS
   ------------------------------------------------------------------------------
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
+  -- FSM Example
   TYPE CTRL_STT_MAIN IS (
     idleStt,                        -- IDLE State
     waitStartStt,                   -- Wait 2D Conv NPU Start State
@@ -113,24 +121,25 @@ ARCHITECTURE rtl OF c2dConvCoreCtrl IS
   SIGNAL  kerBufInitI     : std_logic;
   SIGNAL  kerBufLdStartI  : std_logic;
   SIGNAL  kerBufLdEnI     : std_logic;
-  SIGNAL  kerBufLdCntI    : NATURAL RANGE 0 TO KERNEL_BUF_WIDTH-1;
+  SIGNAL  kerBufLdCntI    : NATURAL RANGE 0 TO kernelBufWidth-1;
   SIGNAL  kerBufLdEndI    : std_logic;
   SIGNAL  kerBufRdEnI     : std_logic;
   SIGNAL  imgBufInitI     : std_logic;
   SIGNAL  imgBufLdStartI  : std_logic;
   SIGNAL  imgBufLdEnI     : std_logic;
-  SIGNAL  imgBufLdCntI    : NATURAL RANGE 0 TO IMAGE_BUF_WIDTH;
+  SIGNAL  imgBufLdCntI    : NATURAL RANGE 0 TO imageBufWidth;
   SIGNAL  imgBufLdEndI    : std_logic;
   SIGNAL  imgBufRdStartI  : std_logic;
   SIGNAL  imgBufRdEnI     : std_logic;
-  SIGNAL  imgBufRdCntI    : NATURAL RANGE 0 TO IMAGE_BUF_WIDTH;
+  SIGNAL  imgBufRdCntI    : NATURAL RANGE 0 TO imageBufWidth;
   SIGNAL  imgBufRdEndI    : std_logic;
   SIGNAL  addTreeEnI      : std_logic;
-  SIGNAL  outNumWidthI    : NATURAL RANGE 0 TO IMAGE_BUF_WIDTH;
-  SIGNAL  outNumHeightI   : NATURAL RANGE 0 TO IMAGE_BUF_HEIGHT;
-  SIGNAL  outHeightCntI   : NATURAL RANGE 0 TO IMAGE_BUF_HEIGHT;
+  SIGNAL  outNumWidthI    : NATURAL RANGE 0 TO imageBufWidth;
+  SIGNAL  outNumHeightI   : NATURAL RANGE 0 TO imageBufHeight;
+  SIGNAL  outHeightCntI   : NATURAL RANGE 0 TO imageBufHeight;
   SIGNAL  endOfConv2DI    : std_logic;
   SIGNAL  extraOutEnI     : std_logic;
+  SIGNAL  outHeightCntExtraI : NATURAL RANGE 0 TO maxOutputNum;
   -- SIGNAL END
 
 BEGIN
@@ -153,7 +162,7 @@ BEGIN
   imgBufLdEn      <=imgBufLdEnI;
   imgBufRdEn      <=imgBufRdEnI;
   addTreeEn       <=addTreeEnI;
-  outHeightCnt    <=std_logic_vector(to_unsigned(outHeightCntI, IMAGE_BUF_HEIGHT_BITSIZE));
+  outHeightCnt    <=std_logic_vector(to_unsigned(outHeightCntI, imageBufHeightBitSize));
   -- END CONNECTION
 
   ------------------------------------------------------------------------------
@@ -190,7 +199,7 @@ BEGIN
                 else                                ctrlMainSttI <=imgBufInitStt;
                 end if;
         when  extraChkStt       =>
-                if outHeightCntI=MAX_OUTPUT_NUM then ctrlMainSttI <=restStt;
+                if outHeightCntExtraI=maxOutputNum then ctrlMainSttI <=restStt;
                 else                                 ctrlMainSttI <=extraOutStt; end if;
         when  extraOutStt       => ctrlMainSttI <=extraChkStt;        -- Extra Out State
         when  restStt           => ctrlMainSttI <=postStt;            -- Rest State
@@ -350,8 +359,20 @@ BEGIN
     elsif rising_edge(clk) then
       if ctrlMainSttI=idleStt OR ctrlMainSttI=waitStartStt then outHeightCntI <=0;
       elsif ctrlMainSttI=calcParaStt OR ctrlMainSttI=extraOutStt then
-        if outHeightCntI=MAX_OUTPUT_NUM then outHeightCntI <=0;
+        if outHeightCntI=outNumHeightI then outHeightCntI <=0;
         else outHeightCntI <=outHeightCntI +1; end if;
+      end if;
+    end if;
+  END PROCESS;
+
+  outHeightCntExtraIP : PROCESS(all)
+  BEGIN
+    if resetB='0' then outHeightCntExtraI <=0;
+    elsif rising_edge(clk) then
+      if ctrlMainSttI=idleStt OR ctrlMainSttI=waitStartStt then outHeightCntExtraI <=0;
+      elsif ctrlMainSttI=calcParaStt OR ctrlMainSttI=extraOutStt then
+        if outHeightCntExtraI=maxOutputNum then outHeightCntExtraI <=0;
+        else outHeightCntExtraI <=outHeightCntExtraI +1; end if;
       end if;
     end if;
   END PROCESS;

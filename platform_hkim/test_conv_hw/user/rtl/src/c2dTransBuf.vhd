@@ -48,9 +48,6 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================

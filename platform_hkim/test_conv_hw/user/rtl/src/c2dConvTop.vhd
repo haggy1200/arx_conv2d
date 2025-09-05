@@ -48,13 +48,25 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dConvTop IS
+GENERIC(
+  IMAGE_BUF_WIDTH            : NATURAL :=    14;  -- Image Buffer Width,  HW
+  IMAGE_BUF_HEIGHT           : NATURAL :=    14;  -- Image Buffer Height, HW
+  IMAGE_BUF_BITSIZE          : NATURAL :=    32;  -- Image Buffer Element Bit Size (32-bit 2's complement)
+  IMAGE_BUF_WIDTH_BITSIZE    : NATURAL :=     8;  -- # of bits for width port of the platform, defined on the Platform
+  IMAGE_BUF_HEIGHT_BITSIZE   : NATURAL :=     8;  -- # of bits for height port of the platform, defined on the Platform
+  KERNEL_BUF_WIDTH           : NATURAL :=     3;  -- Kernel Buffer Width,  HW
+  KERNEL_BUF_HEIGHT          : NATURAL :=     3;  -- Kernel Buffer Height, HW
+  KERNEL_BUF_BITSIZE         : NATURAL :=    32;  -- Kernel Buffer Element Bit Size (32-bit 2's complement)
+  KERNEL_BUF_WIDTH_BITSIZE   : NATURAL :=     8;
+  KERNEL_BUF_HEIGHT_BITSIZE  : NATURAL :=     8;
+  OUTPUT_BUF_WIDTH           : NATURAL :=    16;
+  OUTPUT_BUF_BITSIZE         : NATURAL :=    32;
+  MAX_OUTPUT_NUM             : NATURAL :=    16  -- for Platform
+);
 PORT(
   endOfConv2D     : out std_logic;
   convCoreValid   : out std_logic;
@@ -85,6 +97,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
   ------------------------------------------------------------------------------
   -- COMPONENT DECLARATION
   ------------------------------------------------------------------------------
+  ---V250526
   COMPONENT c2dTransBuf
   GENERIC(
     numOfWidth      : NATURAL := 8;   -- number of BUF_WIDTH  , HW
@@ -111,6 +124,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
 
   COMPONENT c2dConvCore
   GENERIC(
+    imageBufWidth   : NATURAL :=14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
     numOfWidth      : NATURAL := 8;   -- number of WIDTH    , KERNEL_BUF_WIDTH
     numOfHeight     : NATURAL := 8;   -- number of HEIGHT   , KERNEL_BUF_HEIGHT
     sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
@@ -138,6 +152,17 @@ ARCHITECTURE rtl OF c2dConvTop IS
   END COMPONENT;
 
   COMPONENT c2dConvCoreCtrl
+  ---V250904
+  GENERIC(
+    imageBufWidthBitSize    : NATURAL :=     8; -- IMAGE_BUF_WIDTH_BITSIZE
+    imageBufHeightBitSize   : NATURAL :=     8; -- IMAGE_BUF_HEIGHT_BITSIZE
+    kernelBufWidthBitSize   : NATURAL :=     8; -- KERNEL_BUF_WIDTH_BITSIZE
+    kernelBufHeightBitSize  : NATURAL :=     8; -- KERNEL_BUF_HEIGHT_BITSIZE
+    kernelBufWidth          : NATURAL :=     3; -- KERNEL_BUF_WIDTH, Kernel Buffer Width, HW
+    imageBufWidth           : NATURAL :=    14; -- IMAGE_BUF_WIDTH , Image Buffer Width,  HW
+    imageBufHeight          : NATURAL :=    14; -- IMAGE_BUF_HEIGHT, Image Buffer Height, HW
+    maxOutputNum            : NATURAL :=    16  -- MAX_OUTPUT_NUM  , for Platform
+  );
   PORT(
     endOfConv2D     : out std_logic;
     extraOutEn      : out std_logic;
@@ -201,6 +226,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
   ------------------------------------------------------------------------------
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
+  CONSTANT OUTPUT_BUF_WIDTH_BITSIZE : NATURAL :=IMAGE_BUF_BITSIZE+KERNEL_BUF_BITSIZE+INTEGER(ceil(log2(real(IMAGE_BUF_WIDTH))))+INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))));
   SIGNAL  kerBufInit      : std_logic;
   SIGNAL  kerBufLdEn      : std_logic;
   SIGNAL  kerBufRdEn      : std_logic;
@@ -232,7 +258,7 @@ ARCHITECTURE rtl OF c2dConvTop IS
   SIGNAL  kernelHeight    : std_logic_vector(KERNEL_BUF_HEIGHT_BITSIZE-1 downto 0);
   SIGNAL  imageWidth      : std_logic_vector(IMAGE_BUF_WIDTH_BITSIZE-1 downto 0);
   SIGNAL  imageHeight     : std_logic_vector(IMAGE_BUF_HEIGHT_BITSIZE-1 downto 0);
-  SIGNAL  convCoreOutI    : std_logic_vector(IMAGE_BUF_BITSIZE+KERNEL_BUF_BITSIZE+INTEGER(ceil(log2(real(IMAGE_BUF_WIDTH))))+INTEGER(ceil(log2(real(KERNEL_BUF_HEIGHT))))-1 downto 0);
+  SIGNAL  convCoreOutI    : std_logic_vector(OUTPUT_BUF_WIDTH_BITSIZE-1 downto 0);
   SIGNAL  convCoreValidI  : std_logic;
   SIGNAL  extraOutEnI     : std_logic;
   SIGNAL  convCoreValidO  : std_logic;
@@ -316,6 +342,7 @@ BEGIN
 
   i0_c2dConvCore : c2dConvCore
   GENERIC MAP(
+    imageBufWidth   => IMAGE_BUF_WIDTH    ,
     numOfWidth      => KERNEL_BUF_WIDTH   ,
     numOfHeight     => IMAGE_BUF_HEIGHT   ,
     sizeOfBitImgIn  => IMAGE_BUF_BITSIZE  ,
@@ -342,6 +369,16 @@ BEGIN
   );
 
   i1_c2dConvCoreCtrl : c2dConvCoreCtrl
+  GENERIC MAP(
+    imageBufWidthBitSize    => IMAGE_BUF_WIDTH_BITSIZE    ,
+    imageBufHeightBitSize   => IMAGE_BUF_HEIGHT_BITSIZE   ,
+    kernelBufWidthBitSize   => KERNEL_BUF_WIDTH_BITSIZE   ,
+    kernelBufHeightBitSize  => KERNEL_BUF_HEIGHT_BITSIZE  ,
+    kernelBufWidth          => KERNEL_BUF_WIDTH           ,
+    imageBufWidth           => IMAGE_BUF_WIDTH            ,
+    imageBufHeight          => IMAGE_BUF_HEIGHT           ,
+    maxOutputNum            => MAX_OUTPUT_NUM
+  )
   PORT MAP(
     endOfConv2D     => endOfConv2D     ,
     extraOutEn      => extraOutEnI     ,
@@ -367,6 +404,7 @@ BEGIN
     resetB          => resetB
   );
 
+  -- Signal FIFO
   i2_ipFifo : ipFifo
   GENERIC MAP(
     sizeOfWidth     => 7,
@@ -380,7 +418,7 @@ BEGIN
     resetB          => resetB
   );
 
-  --- for timing control with ARX platform
+  -- for timing control with ARX platform
   capt1P : PROCESS(all)
   BEGIN
     if resetB='0' then 

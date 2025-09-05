@@ -98,7 +98,7 @@ ARCHITECTURE rtl OF ipMultAddTreePipe IS
   TYPE multArrayType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitInA+sizeOfBitInB-1 downto 0);
 
   ------------------------------------------------------------------------------
-  -- FUNCTIONS (scheduled to be moved to the package file)
+  -- FUNCTIONS
   ------------------------------------------------------------------------------
   FUNCTION vectorToArray( vectorIn      : std_logic_vector;
                           arraySize     : NATURAL;

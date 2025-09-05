@@ -48,16 +48,14 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dImgBufLine IS
 GENERIC(
-  numOfInput      : NATURAL := 8;   -- number of input    , IMAGE_BUF_WIDTH
-  sizeOfBitIn     : NATURAL := 8    -- bit size of input  , IMAGE_BUF_BITSIZE
+  imageBufWidth     : NATURAL :=  14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
+  numOfInput        : NATURAL :=   8;   -- number of input    , KERNEL_BUF_WIDTH
+  sizeOfBitIn       : NATURAL :=   8    -- bit size of input  , IMAGE_BUF_BITSIZE
 );
 PORT(
   imgBufFull      : out std_logic;
@@ -84,12 +82,24 @@ ARCHITECTURE rtl OF c2dImgBufLine IS
   ------------------------------------------------------------------------------
   -- SIGNAL DECLARATION
   ------------------------------------------------------------------------------
+  TYPE imgBufArrayType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitIn-1 downto 0);
   SIGNAL imageBufI    : imgBufArrayType(0 TO numOfInput-1);
-  SIGNAL elemCntI     : NATURAL RANGE 0 TO IMAGE_BUF_WIDTH-1;
+  SIGNAL elemCntI     : NATURAL RANGE 0 TO imageBufWidth-1;
   SIGNAL imgBufFullI  : std_logic;
   SIGNAL imgBufEmptyI : std_logic;
   SIGNAL outValidI    : std_logic;
   CONSTANT  zeroSlv   : std_logic_vector(sizeOfBitIn-1 downto 0) :=(others=>'0');
+
+  FUNCTION arrayToVector( arrayIn       : imgBufArrayType;
+                          arraySize     : NATURAL;
+                          elemWidth     : POSITIVE) RETURN std_logic_vector IS
+    VARIABLE vectorOut : std_logic_vector(arraySize*elemWidth-1 downto 0);
+  BEGIN
+    FOR i IN 0 TO arraySize-1 LOOP
+      vectorOut((i+1)*elemWidth-1 downto i*elemWidth) := arrayIn(arrayIn'LEFT+i);
+    END LOOP;
+    RETURN vectorOut;
+  END FUNCTION;
 
 BEGIN
   ------------------------------------------------------------------------------
@@ -118,9 +128,9 @@ BEGIN
     if resetB='0' then
       FOR i IN 0 TO numOfInput-1 LOOP imageBufI <=(others=>zeroSlv); END LOOP;
     elsif rising_edge(clk) then
-      if (imgBufInit='1') then  -- Initialization
+      if (imgBufInit='1') then
         FOR i IN 0 TO numOfInput-1 LOOP imageBufI <=(others=>zeroSlv); END LOOP;
-      elsif (imgBufLdEn='1') then -- Load Kernel Data
+      elsif (imgBufLdEn='1') then
         imageBufI(numOfInput-1) <=imgBufLineIn;
         FOR i IN 0 TO (numOfInput-2) LOOP imageBufI(i) <=imageBufI(i+1); END LOOP;
       end if;
@@ -132,8 +142,8 @@ BEGIN
     if resetB='0' then elemCntI <=0;
     elsif (rising_edge(clk)) then
       if (imgBufInit='1') then elemCntI <=0;
-      elsif (imgBufLdEn='1') then -- increase
-        if elemCntI=IMAGE_BUF_WIDTH-1 then elemCntI <=0;
+      elsif (imgBufLdEn='1') then
+        if elemCntI=imageBufWidth-1 then elemCntI <=0;
         else elemCntI <=elemCntI +1; end if;
       end if;
     end if;
@@ -159,8 +169,8 @@ BEGIN
 
   imgBufFullEmptyP : PROCESS(all)
   BEGIN
-    if elemCntI > KERNEL_BUF_WIDTH-1 then imgBufFullI <='1'; imgBufEmptyI <='0';
-    else                                  imgBufFullI <='0'; imgBufEmptyI <='1'; end if;
+    if elemCntI > numOfInput-1 then imgBufFullI <='1'; imgBufEmptyI <='0';
+    else                            imgBufFullI <='0'; imgBufEmptyI <='1'; end if;
   END PROCESS;
   ------------------------------------------------------------------------------
 

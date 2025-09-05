@@ -120,7 +120,7 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
   TYPE dataArrayType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitIn-1 downto 0);
 
   ------------------------------------------------------------------------------
-  -- FUNCTIONS (scheduled to be moved to the package file)
+  -- FUNCTIONS
   ------------------------------------------------------------------------------
   FUNCTION arrayToVector( arrayIn       : dataArrayType;
                           arraySize     : NATURAL;
@@ -186,15 +186,12 @@ ARCHITECTURE rtl OF ipRcsvPipeAddTree IS
   CONSTANT TREE_DEPTH_DIFF    : NATURAL :=TREE_DEPTH_LEFT -TREE_DEPTH_RIGHT;
   CONSTANT TREE_OUT_BIT_LEFT  : NATURAL :=getTreeOutBitWidth(TREE_INPUT_LEFT, sizeOfBitIn);
   CONSTANT TREE_OUT_BIT_RIGHT : NATURAL :=getTreeOutBitWidth(TREE_INPUT_RIGHT, sizeOfBitIn);
-
   SIGNAL  outTreeLeftI            : std_logic_vector(TREE_OUT_BIT_LEFT-1 downto 0);
   SIGNAL  outTreeRightI           : std_logic_vector(TREE_OUT_BIT_RIGHT-1 downto 0);
   SIGNAL  outTreeRightUnAlignedI  : std_logic_vector(TREE_OUT_BIT_RIGHT-1 downto 0);
-
   SIGNAL  inDataArrayI            : dataArrayType(0 TO numOfInput-1);
   SIGNAL  inDataTreeLeftI         : std_logic_vector(TREE_INPUT_LEFT*sizeOfBitIn-1 downto 0);
   SIGNAL  inDataTreeRightI        : std_logic_vector(TREE_INPUT_RIGHT*sizeOfBitIn-1 downto 0);
-
   SIGNAL  enableDelayedI          : std_logic;
   SIGNAL  enableAllI              : std_logic;
   SIGNAL  enableDelayedID1        : std_logic;

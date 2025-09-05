@@ -48,17 +48,15 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dConvCoreLine IS
 GENERIC(
-  numOfInput      : NATURAL := 8;   -- number of input    , KERNEL_BUF_WIDTH
-  sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
-  sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
+  imageBufWidth     : NATURAL :=  14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
+  numOfInput        : NATURAL :=   8;   -- number of input    , KERNEL_BUF_WIDTH
+  sizeOfBitImgIn    : NATURAL :=   8;   -- bit size of image  , IMAGE_BUF_BITSIZE
+  sizeOfBitKerIn    : NATURAL :=   8    -- bit size of kernel , KERNEL_BUF_BITSIZE
 );
 PORT(
   convLineValid   : out std_logic;
@@ -87,8 +85,9 @@ ARCHITECTURE rtl OF c2dConvCoreLine IS
   ------------------------------------------------------------------------------
   COMPONENT c2dImgBufLine
   GENERIC(
-    numOfInput      : NATURAL := 8;   -- number of input    , IMAGE_BUF_WIDTH
-    sizeOfBitIn     : NATURAL := 8    -- bit size of input  , IMAGE_BUF_BITSIZE
+    imageBufWidth     : NATURAL :=  14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
+    numOfInput        : NATURAL :=   8;   -- number of input    , KERNEL_BUF_WIDTH
+    sizeOfBitIn       : NATURAL :=   8    -- bit size of input  , IMAGE_BUF_BITSIZE
   );
   PORT(
     imgBufFull      : out std_logic;
@@ -150,6 +149,7 @@ ARCHITECTURE rtl OF c2dConvCoreLine IS
   SIGNAL  kerBufLineOutI  : std_logic_vector(numOfInput*sizeOfBitKerIn-1 downto 0);
   SIGNAL  outValidI       : std_logic;
   SIGNAL  outQI           : std_logic_vector(sizeOfBitImgIn+sizeOfBitKerIn+INTEGER(ceil(log2(real(numOfInput))))-1 downto 0);
+
   -- synthesis translate_off
   TYPE kerBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitKerIn-1 downto 0);
   TYPE imgBufType IS ARRAY (NATURAL RANGE<>) OF std_logic_vector(sizeOfBitImgIn-1 downto 0);
@@ -202,8 +202,9 @@ BEGIN
   ------------------------------------------------------------------------------
   i0_c2dImgBufLine : c2dImgBufLine
   GENERIC MAP(
-    numOfInput      => numOfInput     ,
-    sizeOfBitIn     => sizeOfBitImgIn
+    imageBufWidth     => imageBufWidth     ,
+    numOfInput        => numOfInput        ,
+    sizeOfBitIn       => sizeOfBitImgIn
   )
   PORT MAP(
     imgBufFull      => imgBufFullI     ,

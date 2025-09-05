@@ -48,18 +48,16 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dConvCore IS
 GENERIC(
-  numOfWidth      : NATURAL := 8;   -- number of WIDTH    , KERNEL_BUF_WIDTH
-  numOfHeight     : NATURAL := 8;   -- number of HEIGHT   , KERNEL_BUF_HEIGHT
-  sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
-  sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
+  imageBufWidth     : NATURAL :=  14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
+  numOfWidth        : NATURAL :=   8;   -- number of WIDTH    , KERNEL_BUF_WIDTH
+  numOfHeight       : NATURAL :=   8;   -- number of HEIGHT   , IMAGE_BUF_HEIGHT
+  sizeOfBitImgIn    : NATURAL :=   8;   -- bit size of image  , IMAGE_BUF_BITSIZE
+  sizeOfBitKerIn    : NATURAL :=   8    -- bit size of kernel , KERNEL_BUF_BITSIZE
 );
 PORT(
   convCoreEnd     : out std_logic;
@@ -90,9 +88,10 @@ ARCHITECTURE rtl OF c2dConvCore IS
   ------------------------------------------------------------------------------
   COMPONENT c2dConvCoreLine
   GENERIC(
-    numOfInput      : NATURAL := 8;   -- number of input    , KERNEL_BUF_WIDTH
-    sizeOfBitImgIn  : NATURAL := 8;   -- bit size of image  , IMAGE_BUF_BITSIZE
-    sizeOfBitKerIn  : NATURAL := 8    -- bit size of kernel , KERNEL_BUF_BITSIZE
+    imageBufWidth     : NATURAL :=  14;   -- Image Buffer Width,  IMAGE_BUF_WIDTH
+    numOfInput        : NATURAL :=   8;   -- number of input    , KERNEL_BUF_WIDTH
+    sizeOfBitImgIn    : NATURAL :=   8;   -- bit size of image  , IMAGE_BUF_BITSIZE
+    sizeOfBitKerIn    : NATURAL :=   8    -- bit size of kernel , KERNEL_BUF_BITSIZE
   );
   PORT(
     convLineValid   : out std_logic;
@@ -149,7 +148,7 @@ ARCHITECTURE rtl OF c2dConvCore IS
   TYPE  signalArrayType       IS ARRAY (NATURAL RANGE<>) OF std_logic;
 
   ------------------------------------------------------------------------------
-  -- FUNCTIONS (scheduled to be moved to the package file)
+  -- FUNCTIONS
   ------------------------------------------------------------------------------
   FUNCTION vectorToArray( vectorIn      : std_logic_vector;
                           arraySize     : NATURAL;
@@ -236,9 +235,10 @@ BEGIN
       -- Line Convolution
       i_c2dConvCoreLine : c2dConvCoreLine
       GENERIC MAP(
-        numOfInput      => numOfWidth      ,
-        sizeOfBitImgIn  => sizeOfBitImgIn  ,
-        sizeOfBitKerIn  => sizeOfBitKerIn
+        imageBufWidth     => imageBufWidth   ,  -- IMAGE_BUF_WIDTH
+        numOfInput        => numOfWidth      ,  -- KERNEL_BUF_WIDTH
+        sizeOfBitImgIn    => sizeOfBitImgIn  ,  -- IMAGE_BUF_BITSIZE
+        sizeOfBitKerIn    => sizeOfBitKerIn     -- KERNEL_BUF_BITSIZE
       )
       PORT MAP(
         convLineValid   => convLineValidI(i)    ,

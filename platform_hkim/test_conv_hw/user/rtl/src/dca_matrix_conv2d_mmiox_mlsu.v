@@ -101,9 +101,9 @@ parameter MA_BW_DATA = 128;
 parameter MB_BW_DATA = 128;
 parameter MC_BW_DATA = 128;
 
-parameter INPUT_MATRIX_SIZE = 14;
+parameter INPUT_MATRIX_SIZE = 18;
 parameter KERNEL_MATRIX_SIZE = 7;
-parameter OUTPUT_MATRIX_SIZE = 8;
+parameter OUTPUT_MATRIX_SIZE =16;
 parameter TENSOR_PARA = 0;
 
 localparam BW_CONFIG = 1;
@@ -583,7 +583,23 @@ assign control_rmx_operation_finish = go_idle;
 
 // execute
 // hkim
-c2dConvTop i_c2dConvTop
+c2dConvTop
+#(
+  .IMAGE_BUF_WIDTH          (INPUT_MATRIX_SIZE ),
+  .IMAGE_BUF_HEIGHT         (INPUT_MATRIX_SIZE ),
+  .IMAGE_BUF_BITSIZE        (BW_TENSOR_SCALAR  ),
+  .IMAGE_BUF_WIDTH_BITSIZE  (BW_MATRIX_SIZE    ),
+  .IMAGE_BUF_HEIGHT_BITSIZE (BW_MATRIX_SIZE    ),
+  .KERNEL_BUF_WIDTH         (KERNEL_MATRIX_SIZE),
+  .KERNEL_BUF_HEIGHT        (KERNEL_MATRIX_SIZE),
+  .KERNEL_BUF_BITSIZE       (BW_TENSOR_SCALAR  ),
+  .KERNEL_BUF_WIDTH_BITSIZE (BW_MATRIX_SIZE    ),
+  .KERNEL_BUF_HEIGHT_BITSIZE(BW_MATRIX_SIZE    ),
+  .OUTPUT_BUF_WIDTH         (OUTPUT_MATRIX_SIZE),
+  .OUTPUT_BUF_BITSIZE       (BW_TENSOR_SCALAR  ),
+  .MAX_OUTPUT_NUM           (OUTPUT_MATRIX_SIZE)
+)
+i_c2dConvTop
 (
   .endOfConv2D     ( end_of_2d_conv                       ),
   .convCoreValid   ( conv_core_valid                      ),
@@ -600,6 +616,8 @@ c2dConvTop i_c2dConvTop
   .numKernelHeight ( kernel_size_m1 + 1'b1                ),
   .numImageWidth   ( input_size_m1 + 1'b1                 ),
   .numImageHeight  ( input_size_m1 + 1'b1                 ),
+  .numOutWidth     ( output_size_m1 + 1'b1                ),
+  .numOutHeight    ( output_size_m1 + 1'b1                ),
   .npuStart        ( go_execute                           ),
   .clk             ( clk                                  ),
   .resetB          ( rstnn                                )

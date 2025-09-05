@@ -48,17 +48,14 @@
 LIBRARY ieee;   USE ieee.std_logic_1164.all;
                 USE ieee.numeric_std.all;
                 USE ieee.math_real.all;
-LIBRARY work;   USE work.pkgConstNpuConv2d.all;
-                USE work.pkgTypeNpuConv2d.all;
-                USE work.pkgFuncNpuConv2d.all;
 --==============================================================================
 
 --==============================================================================
 ENTITY c2dOutBuf IS
 GENERIC(
-  numOfData       : NATURAL := 8;   -- number of data
-  sizeOfBitIn     : NATURAL := 8;   -- input bit size
-  sizeOfBitOut    : NATURAL := 8    -- output bit size
+  numOfData       : NATURAL := 8;
+  sizeOfBitIn     : NATURAL := 8;
+  sizeOfBitOut    : NATURAL := 8
 );
 PORT(
   outValid        : out std_logic;
